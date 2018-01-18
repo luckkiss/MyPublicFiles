@@ -1,0 +1,10 @@
+
+在php.ini里配置Zend Debugger:
+[Zend Debugger]
+zend_extension = "/Users/y/Sites/myphpF/phpmyadmin/zend debugger/ZendDebugger.so"
+zend_debugger.expose_remotely=always
+zend_debugger.allow_hosts=10.1.1.38
+
+在Zend Studio里配置： 
+Preferences—Servers-New-Generic PHP Server 建立服务地址
+Debug Configurations 配置debug信息

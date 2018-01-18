@@ -1,0 +1,7 @@
+改动处：
+
+UIInterfaceOrientationIsPortrait
+
+UIInterfaceOrientationMaskPortrait
+
+选项勾选Portrait

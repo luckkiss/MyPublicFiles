@@ -1,0 +1,65 @@
+  朗成哥创建精灵：  
+    float x = 25.0;
+    float y = 3.0;
+    for (int i = 0; i < 4; i++) {
+        CCSprite* sp;
+        std::string str;
+        
+        float autoX = x + i * 150;
+        str = "background_elf_yuan.png";
+        sp = CCSprite::createWithSpriteFrameName(str.c_str());
+        sp->setAnchorPoint(ccp(0.5, 0));
+        sp->setPosition(ccp(autoX ,y));
+        sp->setScale(1.1);
+        progresstimer->addChild(sp);
+        
+        str = "background_elf_duigou.png";
+        sp= CCSprite::createWithSpriteFrameName(str.c_str());
+        sp->setPosition(ccp(autoX, y) +  ccp(0, 20));
+        sp->setScale(1.1);
+        sp->setTag(ICON_RIGHT + i);
+        progresstimer->addChild(sp);
+        sp->setVisible(false);
+        
+        str = "background_elf_" + Utils::intToString(i==0?1:i) + "0.png";
+        sp = CCSprite::createWithSpriteFrameName(str.c_str());
+        sp->setPosition(ccp(autoX,y) + ccp(0, 20));
+        sp->setTag(NUM_LEVER + i);
+        progresstimer->addChild(sp);
+        sp->setVisible(false);
+    }
+
+水墨鱼创建精灵序列帧：
+    auto texture = TextureCache::getInstance()->addImage("dragon.png");
+    auto sheet = SpriteBatchNode::create("dragon.png",10);
+    this->addChild(sheet, 0, ktagSpriteSheet);
+    Size s = Director::getInstance()->getWinSize();
+
+    Vector<SpriteFrame*> animFrames;
+    for (int i = 0; i < 8; i++)
+    {
+        animFrames.clear();
+        for (int j = 0; j < 10; j++)
+        {
+            auto frame = SpriteFrame::createWithTexture(texture, Rect(j * 75, i * 70, 75, 70), false, Director::getInstance()->getVisibleOrigin(), Size(75, 70));
+            animFrames.pushBack(frame);
+        }
+
+        auto animation = Animation::createWithSpriteFrames(animFrames, 0.1f);
+        auto animate = Animate::create(animation);
+        auto seq = Sequence::create(animate, NULL);
+
+        this->flyAction = RepeatForever::create(seq);
+        flyActionArray->pushBack(this->flyAction);
+    }
+
+    auto frame1 = SpriteFrame::createWithTexture(texture, Rect(0, 0, 75, 70), false, Director::getInstance()->getVisibleOrigin(), Size(75, 70));
+
+    this->dargon = Sprite::createWithSpriteFrame(frame1);
+    dargon->setPosition(ccp(s.width/2-80,s.height/2));
+
+    sheet->addChild(dargon);
+
+    this->flyAction = flyActionArray->at(0);
+    dargon->runAction(flyAction);
+    

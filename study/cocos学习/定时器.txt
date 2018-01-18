@@ -1,0 +1,5 @@
+//interval，调用时间间隔，如果为0，建议使用scheduleUpdate
+//repeat，回调函数会被执行repeat+1次，kCCRepeatForever是无限次调用
+//delay，第一次执行前的延时
+void schedule(SEL_SCHEDULE selector, float interval, unsigned intrepeat, floatdelay);
+

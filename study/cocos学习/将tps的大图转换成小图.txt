@@ -1,0 +1,650 @@
+Cocos开发者平台Cocos引擎中文官网H5小游戏编辑器帐号隐私积分权限任务(2)5 消息退出我的问答我的帖子kaiyuzhong
+
+
+首页资讯代码库论坛Cocos2d-xCocos专区招聘活动 每日签到
+ 提交
+我的主题我的回复我的收藏好友近况书签
+好友邀请会员排行
+社区应用
+最新帖子精华区
+社区服务
+会员列表
+统计排行
+左右分栏帮助
+热门标签:开发ios问题app游戏
+ CocoaChina 开发讨论区 » 游戏开发讨论区 » 姜老师的豆知识——将plist中的单图提取出来
+
+上一主题下一主题
+«12»Pages: 1/2Go
+主题 : 姜老师的豆知识——将plist中的单图提取出来
+jarod姜赫
+
+级别: 圣骑士
+7周年勋章 
+UID: 94657
+精华: 0 
+发帖: 332
+可可豆: 2167 CB
+威望: 2119 点
+在线时间: 526(时)
+注册时间: 2011-09-23
+最后登录: 2015-05-25
+楼主 ：
+发表于: 2014-02-28 10:11   发自: Web Page
+倒序阅读   只看楼主   小 中 大
+来源于 程序开发 分类
+姜老师的豆知识——将plist中的单图提取出来   
+
+
+
+这篇文章是今早看到过去写过的CCRenderTexture和截屏文章的回复而想到的。 
+
+使用TexturePacker可以将若干小图，合成一张大图， 
+
+生成的.png和.plist文件可以让cocos2dx解析。 
+
+cocos2dx可以将这些小图从大图中“取出”。 
+
+如果反过来呢？ 
+
+能否将这张大图分解出若干小图呢？ 
+
+自然也是可以的。 
+
+使用TexturePacker编辑时，记得要保存.tps文件，也要保存好原来的单图，因为有可以会遇到之后要修改其中的某个单图的情况。 
+
+两年前，我遇到一个项目，这个项目最恐怖的地方就是， 
+
+美术和程序都找不到大图中的小图的原文件了。 
+
+因为不断修改，整个项目可以用“混乱”二字来形容，谁遇到过一个项目，程序和美工都找不到这个项目原来图片的情况？ 
+
+而在这种混乱的情况下，竟然还要修改其中的一些单图。 
+
+此时，急需一个工具可以将那些小图从合成的大图中分解出来。 
+
+面临的难题就是，如何使用.plist和.png文件将这些小图分解出来。 
+
+既然cocos2dx可以通过.plist和.png分解出小图， 
+
+那么，直接使用cocos2dx来当成这个分解工具不就可以了吗？ 
+
+源代码引用 开始 
+
+
+void CCSpriteFrameCache::addSpriteFramesWithFile(const char *pszPlist) 
+{ 
+CCAssert(pszPlist, "plist filename should not be NULL"); 
+
+if (m_pLoadedFileNames->find(pszPlist) == m_pLoadedFileNames->end()) 
+{ 
+std::string fullPath = CCFileUtils::sharedFileUtils()->fullPathForFilename(pszPlist); 
+CCDictionary *dict = CCDictionary::createWithContentsOfFileThreadSafe(fullPath.c_str()); 
+
+string texturePath(""); 
+
+CCDictionary* metadataDict = (CCDictionary*)dict->objectForKey("metadata"); 
+if (metadataDict) 
+{ 
+// try to read texture file name from meta data 
+texturePath = metadataDict->valueForKey("textureFileName")->getCString(); 
+} 
+
+if (! texturePath.empty()) 
+{ 
+// build texture path relative to plist file 
+texturePath = CCFileUtils::sharedFileUtils()->fullPathFromRelativeFile(texturePath.c_str(), pszPlist); 
+} 
+else 
+{ 
+// build texture path by replacing file extension 
+texturePath = pszPlist; 
+
+// remove .xxx 
+size_t startPos = texturePath.find_last_of("."); 
+texturePath = texturePath.erase(startPos); 
+
+// append .png 
+texturePath = texturePath.append(".png"); 
+
+CCLOG("cocos2d: CCSpriteFrameCache: Trying to use file %s as texture", texturePath.c_str()); 
+} 
+
+CCTexture2D *pTexture = CCTextureCache::sharedTextureCache()->addImage(texturePath.c_str()); 
+
+if (pTexture) 
+{ 
+addSpriteFramesWithDictionary(dict, pTexture); 
+m_pLoadedFileNames->insert(pszPlist); 
+} 
+else 
+{ 
+CCLOG("cocos2d: CCSpriteFrameCache: Couldn't load texture"); 
+} 
+
+dict->release(); 
+} 
+
+} 
+
+源代码引用 结束 
+
+
+重点在于这条语句 addSpriteFramesWithDictionary(dict, pTexture); 
+
+将解析后的.plist信息进一步处理。 
+
+源代码引用 开始 
+
+
+void CCSpriteFrameCache::addSpriteFramesWithDictionary(CCDictionary* dictionary, CCTexture2D *pobTexture) 
+{ 
+/* 
+Supported Zwoptex Formats: 
+
+ZWTCoordinatesFormatOptionXMLLegacy = 0, // Flash Version 
+ZWTCoordinatesFormatOptionXML1_0 = 1, // Desktop Version 0.0 - 0.4b 
+ZWTCoordinatesFormatOptionXML1_1 = 2, // Desktop Version 1.0.0 - 1.0.1 
+ZWTCoordinatesFormatOptionXML1_2 = 3, // Desktop Version 1.0.2+ 
+*/ 
+
+CCDictionary *metadataDict = (CCDictionary*)dictionary->objectForKey("metadata"); 
+CCDictionary *framesDict = (CCDictionary*)dictionary->objectForKey("frames"); 
+int format = 0; 
+
+// get the format 
+if(metadataDict != NULL) 
+{ 
+format = metadataDict->valueForKey("format")->intValue(); 
+} 
+
+// check the format 
+CCAssert(format >=0 && format <= 3, "format is not supported for CCSpriteFrameCache addSpriteFramesWithDictionary:textureFilename:"); 
+
+CCDictElement* pElement = NULL; 
+CCDICT_FOREACH(framesDict, pElement) 
+{ 
+CCDictionary* frameDict = (CCDictionary*)pElement->getObject(); 
+std::string spriteFrameName = pElement->getStrKey(); 
+CCSpriteFrame* spriteFrame = (CCSpriteFrame*)m_pSpriteFrames->objectForKey(spriteFrameName); 
+if (spriteFrame) 
+{ 
+continue; 
+} 
+
+if(format == 0) 
+{ 
+float x = frameDict->valueForKey("x")->floatValue(); 
+float y = frameDict->valueForKey("y")->floatValue(); 
+float w = frameDict->valueForKey("width")->floatValue(); 
+float h = frameDict->valueForKey("height")->floatValue(); 
+float ox = frameDict->valueForKey("offsetX")->floatValue(); 
+float oy = frameDict->valueForKey("offsetY")->floatValue(); 
+int ow = frameDict->valueForKey("originalWidth")->intValue(); 
+int oh = frameDict->valueForKey("originalHeight")->intValue(); 
+// check ow/oh 
+if(!ow || !oh) 
+{ 
+CCLOGWARN("cocos2d: WARNING: originalWidth/Height not found on the CCSpriteFrame. AnchorPoint won't work as expected. Regenrate the .plist"); 
+} 
+// abs ow/oh 
+ow = abs(ow); 
+oh = abs(oh); 
+// create frame 
+spriteFrame = new CCSpriteFrame(); 
+spriteFrame->initWithTexture(pobTexture, 
+CCRectMake(x, y, w, h), 
+false, 
+CCPointMake(ox, oy), 
+CCSizeMake((float)ow, (float)oh) 
+); 
+} 
+else if(format == 1 || format == 2) 
+{ 
+CCRect frame = CCRectFromString(frameDict->valueForKey("frame")->getCString()); 
+bool rotated = false; 
+
+// rotation 
+if (format == 2) 
+{ 
+rotated = frameDict->valueForKey("rotated")->boolValue(); 
+} 
+
+CCPoint offset = CCPointFromString(frameDict->valueForKey("offset")->getCString()); 
+CCSize sourceSize = CCSizeFromString(frameDict->valueForKey("sourceSize")->getCString()); 
+
+// create frame 
+spriteFrame = new CCSpriteFrame(); 
+spriteFrame->initWithTexture(pobTexture, 
+frame, 
+rotated, 
+offset, 
+sourceSize 
+); 
+} 
+else if (format == 3) 
+{ 
+// get values 
+CCSize spriteSize = CCSizeFromString(frameDict->valueForKey("spriteSize")->getCString()); 
+CCPoint spriteOffset = CCPointFromString(frameDict->valueForKey("spriteOffset")->getCString()); 
+CCSize spriteSourceSize = CCSizeFromString(frameDict->valueForKey("spriteSourceSize")->getCString()); 
+CCRect textureRect = CCRectFromString(frameDict->valueForKey("textureRect")->getCString()); 
+bool textureRotated = frameDict->valueForKey("textureRotated")->boolValue(); 
+
+// get aliases 
+CCArray* aliases = (CCArray*) (frameDict->objectForKey("aliases")); 
+CCString * frameKey = new CCString(spriteFrameName); 
+
+CCObject* pObj = NULL; 
+CCARRAY_FOREACH(aliases, pObj) 
+{ 
+std::string oneAlias = ((CCString*)pObj)->getCString(); 
+if (m_pSpriteFramesAliases->objectForKey(oneAlias.c_str())) 
+{ 
+CCLOGWARN("cocos2d: WARNING: an alias with name %s already exists", oneAlias.c_str()); 
+} 
+
+m_pSpriteFramesAliases->setObject(frameKey, oneAlias.c_str()); 
+} 
+frameKey->release(); 
+// create frame 
+spriteFrame = new CCSpriteFrame(); 
+spriteFrame->initWithTexture(pobTexture, 
+CCRectMake(textureRect.origin.x, textureRect.origin.y, spriteSize.width, spriteSize.height), 
+textureRotated, 
+spriteOffset, 
+spriteSourceSize); 
+} 
+
+// add sprite frame 
+m_pSpriteFrames->setObject(spriteFrame, spriteFrameName); 
+spriteFrame->release(); 
+} 
+} 
+
+源代码引用 结束 
+
+
+
+现在，通过 std::string spriteFrameName = pElement->getStrKey();， 
+
+知道了这张单图的名字， 
+
+也获取了这张单图的 CCSpriteFrame ， 
+
+通过之前那篇文章提到的方法， 
+
+static CCRenderTexture* getRenderTexture(int widthP,int heightP,CCNode* nodeP,float node_xP,float node_yP); 
+// 
+CCRenderTexture* JarodGameTools:: getRenderTexture(int widthP,int heightP,CCNode* nodeP,float node_xP,float node_yP) 
+{ 
+CCRenderTexture *rt = CCRenderTexture::create(widthP, heightP); 
+// 
+rt->begin(); 
+nodeP->setPosition(node_xP,node_yP); 
+nodeP->visit(); 
+rt->end(); 
+// 
+return rt; 
+} 
+
+static bool createPng(const char* pngName,CCRenderTexture* textureP); 
+// 
+
+bool JarodGameTools:: createPng(const char* pngName,CCRenderTexture* textureP) 
+{ 
+CCImage* image = textureP->newCCImage(); 
+
+
+return image->saveToFile(pngName,false); 
+} 
+
+直接就可以将读入的所有.plist文件分解成原来的小图了。 
+
+现在，我不再使用这种方式了，原因是， 
+
+我选择使用保存单图和.tps的方式。 
+
+比起遇到一个问题，然后想办法去解决，更好的办法就是，不要让这个问题产生。 
+
+良好的习惯比“高超”的技术更实用，不过，如果真的“高超”，又如何会产生那么多问题呢？ 
+CocosStore分享内容，轻松赚钱
+回复引用收藏分享举报顶端
+bingwa
+只有柏拉图的理想和苦行僧的虔诚，才能成就奇迹
+ 
+级别: 圣骑士
+
+UID: 59019
+精华: 0 
+发帖: 404
+可可豆: 1701 CB
+威望: 1681 点
+在线时间: 288(时)
+注册时间: 2011-03-23
+最后登录: 2015-05-19
+沙发 ：
+发表于: 2014-02-28 22:24   发自: Web Page 只看该作者   小 中 大
+尝试不行。
+代码如下，传入的是plist读取的名称，结果很多是黑图，还没有以前自己写的解析ok。但是我写的那个背景也是黑的，但是至少可以把每个图形切出来。
+
+这个是仿照你这个组合的。
+复制代码
+std::string HelloWorld::SaveScreenshot(CCString* pngName)
+{
+    CCSpriteFrame* a  = CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName(pngName->getCString());
+    CCSprite* sp = CCSprite::createWithSpriteFrameName(pngName->getCString());
+    CCSize size = sp->getContentSize();
+    CCRenderTexture* texture = CCRenderTexture::create((int)size.width, (int)size.height);
+    texture->begin();
+    sp->setPosition(a->getRect().origin);
+    sp->visit();
+    texture->end();
+    
+    CCImage* image = texture->newCCImage();
+    std::string filePath = CCFileUtils::sharedFileUtils()->getWritablePath();
+    filePath += pngName->m_sString;
+    if(image->saveToFile(filePath.c_str(), kCCImageFormatPNG))
+    {
+        CCLog("filePath:%s",filePath.c_str());
+        return filePath;
+    }
+    else
+    {
+        CCLog("write file error");
+    }
+    
+    return "";
+}
+
+My Twitter:@ChinaBing
+一个游走移动的屌丝男
+回复引用分享举报顶端
+jarod姜赫
+
+级别: 圣骑士
+7周年勋章 
+UID: 94657
+精华: 0 
+发帖: 332
+可可豆: 2167 CB
+威望: 2119 点
+在线时间: 526(时)
+注册时间: 2011-09-23
+最后登录: 2015-05-25
+板凳 ：
+发表于: 2014-03-04 10:02   发自: Web Page 只看该作者   小 中 大
+回 1楼(bingwa) 的帖子
+
+这个是我没有讲清楚的原因。
+
+当我看到回复后，今天上午，我自己做了三次测试， 总结了一下。
+
+现在，给出一个 自己测试后运行正确的代码
+
+
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+        CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("stageA.plist");
+                                            //第一步，载入一个plist
+
+        CCSpriteFrame* buttonBgFrame = CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName( "buttonBg.png" );
+                                            //第二步，根据名称提取出 frame
+
+        CCSize sizeTemp = buttonBgFrame->getOriginalSize();
+                                            //第三步，获取单图的尺寸
+
+        CCSprite* buttonBgSprite = CCSprite::createWithSpriteFrame(buttonBgFrame);
+                                             //创建一个 sprite
+
+        CCRenderTexture* testT = JarodGameTools::getRenderTexture(sizeTemp.width,sizeTemp.height,buttonBgSprite,sizeTemp.width/2,sizeTemp.height/2);
+                                             //将这个sprite绘制在图片的几何中心点的位置，因为锚点默认是 （0.5,0.5 )
+
+        JarodGameTools::createPng("testButtonBg.png",testT);
+                                            //将这个图片取一个名字，然后提取出来。
+        //----------------------------------------------------------------------------------------------------------------------------------------------
+     
+回复引用分享举报顶端
+bingwa
+只有柏拉图的理想和苦行僧的虔诚，才能成就奇迹
+ 
+级别: 圣骑士
+
+UID: 59019
+精华: 0 
+发帖: 404
+可可豆: 1701 CB
+威望: 1681 点
+在线时间: 288(时)
+注册时间: 2011-03-23
+最后登录: 2015-05-19
+3 楼：
+  发表于: 2014-03-07 00:32   发自: Web Page 只看该作者   小 中 大
+我尝试了。图片是可以显示，但是背景是黑色的。应该是原图透明的部分现在都显示成黑色了。
+如图。
+
+ps：cocos2dx自带的那些骨骼动画图片，都打包一起了。我想看下原图都没法看。 
+图片:CyborgFolder-weapon3.png 
+
+My Twitter:@ChinaBing
+一个游走移动的屌丝男
+回复引用分享举报顶端
+jarod姜赫
+
+级别: 圣骑士
+7周年勋章 
+UID: 94657
+精华: 0 
+发帖: 332
+可可豆: 2167 CB
+威望: 2119 点
+在线时间: 526(时)
+注册时间: 2011-09-23
+最后登录: 2015-05-25
+4 楼：
+  发表于: 2014-03-07 08:56   发自: Web Page 只看该作者   小 中 大
+回 3楼(bingwa) 的帖子
+
+可以用 image->saveToFile(pngName,false); 替代
+
+image->saveToFile(pngName,kCCImageFormatPNG)语句再尝试一次。 
+回复引用分享举报顶端
+bingwa
+只有柏拉图的理想和苦行僧的虔诚，才能成就奇迹
+ 
+级别: 圣骑士
+
+UID: 59019
+精华: 0 
+发帖: 404
+可可豆: 1701 CB
+威望: 1681 点
+在线时间: 288(时)
+注册时间: 2011-03-23
+最后登录: 2015-05-19
+5 楼：
+  发表于: 2014-03-07 13:30   发自: Web Page 只看该作者   小 中 大
+if(image->saveToFile(filePath.c_str(), kCCImageFormatPNG))我一直用的就是这个。
+貌似真心不行。我以前没有做的时候，也是想当然的认为可以，实际上不行。 游戏中获取，保存的时候，他会把背景带上的。我尝试在一个layer添加，也不行 
+My Twitter:@ChinaBing
+一个游走移动的屌丝男
+回复引用分享举报顶端
+jarod姜赫
+
+级别: 圣骑士
+7周年勋章 
+UID: 94657
+精华: 0 
+发帖: 332
+可可豆: 2167 CB
+威望: 2119 点
+在线时间: 526(时)
+注册时间: 2011-09-23
+最后登录: 2015-05-25
+6 楼：
+  发表于: 2014-03-07 13:46   发自: Web Page 只看该作者   小 中 大
+回 5楼(bingwa) 的帖子
+if(image->saveToFile(filePath.c_str(), kCCImageFormatPNG)) 
+    { 
+        CCLog("filePath:%s",filePath.c_str()); 
+        return filePath; 
+    } 
+
+
+如果你使用的是这段语句，
+
+将 后面的参数改为 false,
+
+这个函数，第二个参数类型为 bool  , 
+
+填成 kccimageFormatPNG就好比是 参数填成了 true  
+
+
+用一句刚学会的网络用语来说 “我只能帮你到这了”。 
+回复引用分享举报顶端
+bingwa
+只有柏拉图的理想和苦行僧的虔诚，才能成就奇迹
+ 
+级别: 圣骑士
+
+UID: 59019
+精华: 0 
+发帖: 404
+可可豆: 1701 CB
+威望: 1681 点
+在线时间: 288(时)
+注册时间: 2011-03-23
+最后登录: 2015-05-19
+7 楼：
+  发表于: 2014-03-08 18:06   发自: Web Page 只看该作者   小 中 大
+的确参数错了。这个代码是很早以前写的，当时获取是黑的，所以一直以为是函数问题。刚才查看了下，果然第二个参数是bool，可能当初看错了。
+好吧重新整理下我这个代码，如下可行。
+复制代码
+std::string HelloWorld::SaveScreenshot(CCString* pngName)
+{
+    CCSpriteFrame* spframe  = CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName(pngName->getCString());
+    CCSize sizeTemp = spframe->getOriginalSize();
+    CCSprite* sp = CCSprite::createWithSpriteFrameName(pngName->getCString());
+    CCRenderTexture* texture = CCRenderTexture::create(sizeTemp.width, sizeTemp.height);
+    texture->begin();
+    sp->setPosition(ccp(sizeTemp.width/2,sizeTemp.height/2));
+    sp->visit();
+    texture->end();
+   
+    CCImage* image = texture->newCCImage();
+    std::string filePath = CCFileUtils::sharedFileUtils()->getWritablePath();
+    filePath += pngName->m_sString;
+    if(image->saveToFile(filePath.c_str(), false))
+    {
+        CCLog("filePath:%s",filePath.c_str());
+        return filePath;
+    }
+    else
+    {
+        CCLog("write file error");
+    }
+    return "";
+}
+
+
+My Twitter:@ChinaBing
+一个游走移动的屌丝男
+回复引用分享举报顶端
+duduyao
+
+级别: 新手上路
+
+UID: 298793
+精华: 0 
+发帖: 3
+可可豆: 3 CB
+威望: 3 点
+在线时间: 0(时)
+注册时间: 2014-03-10
+最后登录: 2014-04-26
+8 楼：
+  发表于: 2014-03-10 17:15   发自: Web Page 只看该作者   小 中 大
+mark!~ 
+回复引用分享举报顶端
+游侠一人
+游侠一人，吃茶四方
+
+级别: 新手上路
+
+状态: 未签到 - [29天]
+UID: 298740
+精华: 0 
+发帖: 11
+可可豆: 111 CB
+威望: 109 点
+在线时间: 38(时)
+注册时间: 2014-03-10
+最后登录: 2015-04-10
+9 楼：
+  发表于: 2014-03-13 15:40   发自: Web Page 只看该作者   小 中 大
+bingo!! 
+游侠一人.吃茶四方
+回复引用分享举报顶端
+ 上一主题下一主题
+«12»Pages: 1/2Go
+帖子浏览记录?版块浏览记录? CocoaChina 开发讨论区 » 游戏开发讨论区
+快速回复
+kaiyuzhong
+
+
+ 
+ 关注本帖(如果有新回复会站内信通知您)
+进入高级模式
+加粗字体颜色背景颜色插入链接图片
+	描述 	
+发帖、回帖都会得到可观的积分奖励。查看论坛积分规则
+ 按"Ctrl+Enter"直接提交
+默认表情其他
+
+ CocoaChina苹果开发中文站
+网站地图
+联系我们
+清除Cookies
+手机浏览
+首页
+游戏开发
+App Store研究
+iOS开发
+游戏开发
+Cocos引擎
+业界动态
+产品设计
+程序人生
+开发者服务
+论坛
+技术问答
+开发者中心
+代码库
+工具库
+问答
+最新问答
+热门问题
+用户
+未解答提问
+我要提问
+论坛板块
+OS X开发
+Swift专区
+iOS开发
+App Store经验交流
+美术区
+游戏开发区
+议事大厅
+招聘外包区
+开发者中心
+App Store应用排行
+发码
+签名
+FAQ
+关注CocoaChina
+关注微信 每日推荐
+关注CocoaChina微信 获取每日文章推荐
+扫一扫 浏览移动版
+扫一扫 浏览CocoaChina移动版
+客服邮箱
+©2015 Chukong Technologies,Inc. | Cocoa China 苹果开发中文站 Powered by phpwind Certificate Code © 2003-2010 phpwind.com Corporation.京公网安备11010502011183京ICP证 100954号京ICP备 11006519号
+顶部

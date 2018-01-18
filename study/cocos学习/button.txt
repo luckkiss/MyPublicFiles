@@ -1,0 +1,32 @@
+//声明  
+void touchButton(Object* object,TouchEventType type);  
+  
+//挂接到控件上  
+uiButton->addTouchEventListener(this,toucheventselector(HelloWorld::touchButton));  
+  
+//实现  
+void HelloWorld::touchButton(Object* object,TouchEventType type)  
+{  
+    LabelTTF* label;  
+    switch (type)  
+    {  
+    case TouchEventType::TOUCH_EVENT_BEGAN:  
+        label = static_cast<LabelTTF*>(getChildByTag(11));  
+        label->setString("按下按钮");  
+        break;  
+    case TouchEventType::TOUCH_EVENT_MOVED:  
+        label = static_cast<LabelTTF*>(getChildByTag(11));  
+        label->setString("按下按钮移动");  
+        break;  
+    case TouchEventType::TOUCH_EVENT_ENDED:  
+        label = static_cast<LabelTTF*>(getChildByTag(11));  
+        label->setString("放开按钮");  
+        break;  
+    case TouchEventType::TOUCH_EVENT_CANCELED:  
+        label = static_cast<LabelTTF*>(getChildByTag(11));  
+        label->setString("取消点击");  
+        break;  
+    default:  
+        break;  
+    }  
+} 

@@ -1,0 +1,24 @@
+
+U8SDK里的工具
+1、apktool.jar
+编译和反编译
+2、dx.jar
+jar转换成dex
+dex2jar
+将apk反编译成Java源码（classes.dex转化成jar文件）
+3、smali.jar
+将sdk源码转成small格式，和游戏源码合并
+4、java运行环境
+5、python2.7
+
+apktool.jar命令行：
+//将接入统一sdk的apk包反编译到目录下
+java -jar apktool2.jar -q d -b -f huawei.apk -o /Users/y/Desktop
+//生成某个渠道的apk包
+java -jar apktool2.jar -q b -f /Users/y/Desktop -o /Users/y/Desktophuawei.apk
+
+
+打sdk渠道包：
+先打好母包，再替换u8.sdk
+cd -U8SDKTool-Win-P34/scripts
+./pack.py

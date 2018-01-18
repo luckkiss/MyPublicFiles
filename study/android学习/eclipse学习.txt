@@ -1,0 +1,12 @@
+
+查看文件的在项目中的位置：
+Navigate->show in->package explorer
+
+快捷键：
+ctrl+shift+r：打开资源
+ctrl+o：快速查看方法
+ctrl+e：快速转换编辑器
+ctrl+alt+<-:上一个打开的编辑器
+
+查看第三方依赖库源码：
+jar是编译好的，想查看源码需要下载好源码，跟jar关联

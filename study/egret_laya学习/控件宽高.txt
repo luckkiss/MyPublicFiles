@@ -1,0 +1,10 @@
+
+一个不定死大小的按钮
+
+layoutBoundsWidth ： 布局范围宽 126
+measuredWidth : 测量宽度 126
+percentWidth : 当前宽度 NaN
+preferredWidth : 首选宽度 126
+explicitWidth : 明确宽度 NaN
+
+修改scale之后不会马上变，但是提交属性的时候都会变

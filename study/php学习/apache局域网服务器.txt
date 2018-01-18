@@ -1,0 +1,35 @@
+
+
+1.启动apache
+sudo apachectl -k start
+
+2.重新启动
+sudo apachectl -k restart
+
+apache2的目录：
+cmd open /etc
+
+修改Apache配置文件：
+1 DocumentRoot "/Users/y/Sites"
+<Directory "/Users/y/Sites"> localhost指向的文件夹
+2 Listen 9999 使用自定义端口
+3 #LoadModule php5_module ...
+按字母x，删除#，然后按ESC，输入:wq退出编辑器
+4 cd /etc/
+sudo cp php.ini.default php.ini
+5 重新启动Apache服务器
+
+
+ip的80端口被占用：
+找到被占用的80端口的PID，然后kill
+lsof -i :80|grep -v "PID"|awk '{print "kill -9",$2}'|sh
+
+http.conf配置zendStudio工作路径:
+Alias /Workspace "/Users/y/Sites/myphpF/zendStudioWorkSpace"
+<Directory "/Users/y/Sites/myphpF/zendStudioWorkSpace">
+Options Indexes MultiViews ExecCGI
+DirectoryIndex index.php
+AllowOverride None
+Order allow,deny
+Allow from all
+</Directory>

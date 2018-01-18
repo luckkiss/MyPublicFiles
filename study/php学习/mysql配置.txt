@@ -1,0 +1,48 @@
+
+mysql mac路径：
+/usr/local
+
+
+mysql重置密码：
+
+关闭mysql服务器
+sudo /usr/local/mysql/support-files/mysql.server stop
+也可以在系统偏好里有个MySQL里关闭。
+cd /usr/local/mysql/bin    进入目录
+sudo su 获取权限
+./mysqld_safe --skip-grant-tables & 重启服务器
+重开个终端
+
+输入mysql 进入mysql命令模式 
+use mysql进入mysql数据库
+flush privileges;大概就是获取权限，要不他不让你改。
+set password for 'root'@'localhost'=password('新密码'); 完成修改
+
+
+配置bashrc：
+在终端中输入
+sudo vim /etc/bashrc  
+然后在其中加入
+#mysql  
+alias mysql='/usr/local/mysql/bin/mysql'  
+alias mysqladmin='/usr/local/mysql/bin/mysqladmin'  
+
+配置php.ini：
+cd /etc  
+sudo cp php.ini.default php.ini  
+sudo chmod 666 php.ini  
+将三处/var/mysql/mysql.sock替换为/tmp/mysql.sock
+最终结果是这样：
+pdo_mysql.default_socket=/tmp/mysql.sock  
+mysql.default_socket = /tmp/mysql.sock  
+mysqli.default_socket = /tmp/mysql.sock  
+
+在网址上打开数据库：
+http://localhost/phpmyadmin/index.php
+
+LNMP相关目录
+nginx : /usr/local/nginx
+mysql : /usr/local/mysql
+php : /usr/local/php
+网站目录: /home/wwwroot/
+Nginx日志目录：/home/wwwlogs/

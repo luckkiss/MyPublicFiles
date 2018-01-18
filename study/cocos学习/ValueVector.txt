@@ -1,0 +1,22 @@
+  ValueVector intArray;
+    for(int i=0;i<10;i++)
+    {
+        intArray.push_back(Value(i));
+    }
+    CCLOG("%d",intArray.at(0).asInt());
+
+explicit Value(int v);  
+xplicit Value(float v);//直接给一个Value赋值，如Value(10.0);  
+  
+Value& operator= (int v);  
+Value& operator= (float v);//创建一个变量再赋值，如：Value val(10.0);  
+  
+int asInt() const;//将Value转换成整型  
+float asFloat() const;//浮点型  
+  
+//判断Value 是否为空  
+inline bool isNull() const { return _type == Type::NONE; }  
+  
+std::string getDescription();//得到一个Value的描述，返回类型为string型  
+  
+inline Type getType() const { return _type; };//得到Value的类型  

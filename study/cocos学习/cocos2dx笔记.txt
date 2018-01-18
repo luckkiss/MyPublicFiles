@@ -1,0 +1,429 @@
+cocos new test1 -p com.your_company.mygame -l cpp -d /Users/jingshichen/Desktop
+
+
+设计类的一般格式
+bool HelloWorld::init()
+{
+	bool bRet = false;
+	do{
+	   CC_BREAK_IF(!CCLayer::init());
+	…
+	   CC_BREAK_IF(!sprite);//在添加精灵前判断
+	…
+	bRet = true;
+}while(0)
+return bRet;
+}
+
+Scene* MainScene::createScene()
+{
+    Scene* scene = Scene::create();
+    Layer* layer = Layer::create();
+    scene->addChild(layer);
+    return scene;
+}
+
+static MainScene* create()
+{
+    MainScene *pRet = new MainScene;
+    if(pRet && pRet->init())
+    {
+        pRet->autorelease();
+        return pRet;
+    }
+    else{
+        delete pRet;
+        pRet = NULL;
+        return nullptr;
+    }
+}
+时间表控制器
+this->schedule(schedule_selector(MainScene::myupdate));
+//设置屏幕尺寸
+    /* 设置Win32屏幕大小为480X800, */
+    glview->setFrameSize(480, 800);
+    /* 简单的屏幕适配，按比例拉伸，可能有黑边 */
+    glview->setDesignResolutionSize(480, 800, ResolutionPolicy::SHOW_ALL);
+/////////////////////////////////////
+/////////////////////////////////////字体
+/////////////////////////////////////
+std::string words = "三翻四复";//windows下是不支持中文的，xcode支持。
+  auto label = Label::create(words,"STHeiti", 30);//黑体，三十号
+  this->addChild(label);
+ 
+  TTFConfigconfig("fonts/barnacle.ttf", 25);//TTF字体
+  auto labelTTF =Label::createWithTTF(config, "Hello ");
+  labelTTF->setPosition(333,333);
+  labelTTF->setColor(Color3B(255, 0, 0));
+  this->addChild(labelTTF);
+ 
+  auto labelTTF1 =Label::createWithTTF("ABCDEFG", "fonts/16.ttf", 44);
+  labelTTF1->setTextColor(Color4B(255, 0,0, 255));
+  labelTTF1->setPosition(444, 444);
+  labelTTF1->enableShadow(Color4B::BLUE,Size(10,-10));
+  labelTTF1->enableOutline(Color4B::GREEN,3);
+  labelTTF1->enableGlow(Color4B::BLACK);
+  this->addChild(labelTTF1);
+
+enableShadow 加阴影。 enableOutline(color4B) 加描边 。
+/////////////////////////////////////
+/////////////////////////////////////场景
+/////////////////////////////////////
+CCDirector::sharedDirector()->replaceScene(CCTransitionSlideInT:create(3.0f,SecondScene::scene()));
+//切换场景的特效
+CCTransitionJumpZoom 原场景缩小弹出，新场景放大弹入
+CCTransitionProcessRadialCCW 逆时针切换
+CCTransitionProcessHorizontal 水平向右切换
+CCTransitionProcessInOut 从立向外切换
+CCTransitionProcessCrossFade 原场景慢慢消失，新场景同时慢慢出现
+…
+
+推进和推出场景
+将replaceScene改为popScene或pushScene
+void SecondScene::popScene(CCObject* pSender){
+	CCDirector::sharedDirector()->popScene();
+}
+/////////////////////////////////////
+/////////////////////////////////////控件
+/////////////////////////////////////
+CCMenu的alignItems Vertically可以让子菜单项自动按垂直方向排列
+
+九妹 可自由拉伸图片
+CCScale9Sprite *nineGirl = CCScale9Sprite::create(“button.png”);
+nineGirl->setContentSize(CCSize(200,100));//没什么用，影响在屏幕上的位置
+sprite->setPreferredSize(Size(100,100));//将控件拉大保持纯色
+nineGirl->setPosition(Point(200,200));
+this->addChild(nineGirl);
+九妹与按钮的搭配
+CCScale9Sprite* btnNormal = CCScale9Sprite::create(“button.png”);
+CCScale9Sprite* btnDown = CCScale9Sprite::create(“buttonHighLighted.png”);
+CCLabelTTF* title = CCLabelTTF::create(“Touch me!”,”Marker Felt”,30);
+创建按钮，按钮的大小会根据标题自动调整
+CCControlButton* controlBtn = CCControlButton::create(title,btnNormal);
+设置按钮按下时的图片
+controlBtn->setBackgroundSpriteForState(btnDown,CCControlStateSelected);
+controlBtn->setPosition(ccp(200,100));
+this->addChild(controlBtn);
+强制设置按钮大小 （如果按钮标题超过这个范围，就自动扩大）
+controlBtn->setPreferredSize(CCSize(300,50));
+让按钮按下时改变按钮文字的颜色
+setTitleColorForState(ccWHITE,CCControlStateHighlighted);
+
+设置一个圆形音乐按钮
+CCControlPotentiometer* potentiometer = CCControlPotentiometer::create(
+	“potentiometerTrack.png”,//底座
+	“potentiometerProcess.png”,//进度条
+	“potentiometerButton.png”);//控制按钮
+	potentiometer->setPosition(ccp(100,200));
+	this->addChild(potentiometer);
+)
+监听进度值改变事件
+potentiometer->addTargetWithActionForControlEvents(
+	this,
+	CCControl_selector(HelloWorld::onValueChange),
+	CCControlEventValueChanged);
+);
+void HelloWorld::onValueChange(CCObject* pSender,CCControlEvent event){
+	CCControlPotentiometer* potentiometer=(CCControlPotentiometer*)pSender;
+	CCString* valueStr = CCString::createWithFormat(“%f”,potentiometer->getValue());
+	CCLOG(valueStr->getString());//valueStr的值在0到1之间,通过改变potentiometer->getValue()的值来改变声音大小
+}
+设置一个条形音乐按钮
+CCControlSlider* slider = CCControlSlider::create(
+	“background.png”,//底座
+	“process.png”,//进度条
+	“sliderThumb”);//控制按钮(三个条件缺一不可，如果不想要按钮，则设置一个透明图片)
+	slider->setPosition(ccp(100,200));
+	this->addChild(slider);
+//设置进度条的范围
+slider->setMinNumValue(0);
+slider->setMaxNumValue(1000);
+//直接设置当前值
+slider->setValue(1000);
+this->addChild(slider);
+)
+//————————————+++++++++++++++++	菜单
+//菜单回调按钮
+auto closeItem = MenuItemImage::create("CloseNormal.png","CloseSelected.png",  
+                        CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));  
+—————————————————————————————————————————————————————————————————
+//—————————————点击响应回调—————————————————————————————————
+————————————————————————————————————————————————————
+//设置为单点响应  
+setTouchMode(Touch::DispatchMode::ONE_BY_ONE);  
+//设置为多点响应（默认）  
+setTouchMode(Touch::DispatchMode::ALL_AT_ONCE);  
+
+auto dispatcher = Director::getInstance()->getEventDispatcher();  
+auto myListener = EventListenerTouchOneByOne::create();  
+  
+//如果不加入此句消息依旧会向下传递  
+myListener->setSwallowTouches(true);  
+  
+myListener->onTouchBegan(Touch* touch,Event* event)  
+{  
+    if (pass)  
+    {  
+        return true;  
+    }  
+    return false;  
+};  
+myListener->onTouchMoved(Touch* touch,Event* event)  
+{  
+};  
+  
+myListener->onTouchEnded(Touch* touch,Event* event)  
+{   
+};  
+  
+dispatcher->addEventListenerWithSceneGraphPriority(myListener,mySprite1);  
+dispatcher->addEventListenerWithSceneGraphPriority(myListener,mySprite2);  
+
+在 init 添加下面这段代码 ， 屏幕就可以响应单击事件了 。
+auto listen =EventListenerTouchOneByOne::create();
+    listen->onTouchBegan =CC_CALLBACK_2(GameScene::onTouchBegan, this);
+    listen->onTouchMoved =CC_CALLBACK_2(GameScene::onTouchMoved, this);
+    listen->setSwallowTouches(true);
+   Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listen,this);
+
+voidGameScene::onTouchMoved(Touch* pTouch, Event* pEvent){
+  Point touch =pTouch->getLocation();//返回点击的位置
+  Rect rectPlayer =spPlayer->getBoundingBox();//看返回值类型，应该知道这个是飞机所占矩形区域的大小
+ 
+  if(rectPlayer.containsPoint(touch)){//如果点击的点在这个矩形区域内就可以对飞机进行拖动
+    Point temp = pTouch->getDelta();
+     spPlayer->setPosition(spPlayer->getPosition() + temp);
+  }
+ 
+}
+/////////////////////////////////////
+/////////////////////////////////////动作
+/////////////////////////////////////
+//CCMoveTo 移动到某个点 和 CCMoveBy x,y轴的位移
+CCMoveTo* moveTo = CCMoveTo::create(0.9f,ccp(250,150));
+精灵->runAction(moveTo);
+//CCScaleTo 变到几倍 和 CCScaleBy 变为原来的几倍
+CCScaleTo* scaleTo = CCScaleTo::create(2.8f,0.4f,1.0f);//时间，x,y
+///////////////////////////////闪烁动作
+CCBlink* blink = CCBlink::create(3.0f,3);//时间，次数
+sprite->runAction(blink);
+///////////////////////////////旋转动作
+//CRotateBy是在当前旋转角度的基础上再旋转720，CCRotateTo是从当前旋转角度旋转到720
+auto actionRotate = CCRotateTo::create(2.0f,720.0);//时间，角度
+
+//设置角度
+setRotation();
+//水平翻转 竖直翻转
+setFlippedX(true);
+setFlippedY(true);
+
+//绘制贝塞尔曲线——复杂的曲线运动
+        ccBezierConfig bezier;
+        bezier.controlPoint_1 = Point(400,0);//波谷偏向值	低处
+        bezier.controlPoint_2 = Point(200,250);//波峰偏向值 高处
+        bezier.endPosition = Point(300,50);//动作终点
+        auto bezierTo = CCBezierTo::create(4.0f,bezier);
+        sprite->runAction(bezierTo);
+————一个抛物线运动
+	float sx = winSize.width / 2;
+        float sy = winSize.height / 2;
+        float ex =winSize.width / 2+350;
+        float ey =150;
+        int h = sprite->getContentSize().height * 0.5;
+        ccBezierConfig bezier; // 创建贝塞尔曲线
+        bezier.controlPoint_1 = Point(sx, sy); // 起始点
+        bezier.controlPoint_2 = Point(sx+(ex-sx)*0.5, sy+(ey-sy)*0.5+200); //控制点
+        bezier.endPosition = Point(ex-30, ey+h); // 结束位置
+        auto bezierTo = BezierTo::create(4.0f,bezier);
+
+
+////永久性重复动作
+auto repeatForeverAction = RepeatForever::create(actionRotate);
+//指定次数的重复动作
+auto repeatAction = Repeat::create(bezierTo,3);
+//几个动作一起做(有问题，不旋转)
+auto actions = Spawn::create(blink,bezierTo,repeatForeverAction, NULL);
+//动作一个一个做
+auto actions = Sequence::create(bezierTo, repeatForeverAction ,NULL);
+//让精灵执行完动作立刻销毁
+sprite->runAction(Sequence::create(bezierTo,CallFunc::create(CC_CALLBACK_0(Sprite::removeFromParent, sprite)), NULL));
+//回调一个函数的动作
+auto callFunc = CallFunc::create(CC_CALLBACK_0(HelloWorld::back,this));
+
+—————————————————————动画
+//初始化当前的图层
+bool GameScene::init()
+{
+    if(!Layer::init())      //初始化父类
+        return false;
+     
+    //获取屏幕大小
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    //auto size = Director::getInstance()->getWinSize();
+ 
+    //帧动画的创建
+    //方式一，通过多张图片来创建
+    auto sprite1 = Sprite::create("grossini_dance_05.png");
+    sprite1->setPosition(Vec2(visibleSize.width*0.3, visibleSize.height/2));
+    this->addChild(sprite1);
+     
+    //创建帧动画序列，名词形式
+    auto animation = Animation::create();
+    for (int i=5; i<11; i++)
+    {
+        char szName[100] = {0};
+        sprintf(szName, "grossini_dance_%02d.png", i);
+        animation->addSpriteFrameWithFile(szName);
+    }
+    //设置帧动画属性
+    animation->setDelayPerUnit(2.0f / 6);      //每一帧停留的时间，2秒时间完成6幅图片显示，切记要写成2.0f形式！
+    animation->setRestoreOriginalFrame(true);       //播放完后回到第一帧
+     
+    auto animate = Animate::create(animation);
+    sprite1->runAction(RepeatForever::create(animate));
+     
+     
+    //方式二，通过一张集合的图片来创建
+    //创建2D纹理
+    auto texture = Director::getInstance()->getTextureCache()->addImage("dragon_animation.png");
+    //建立图片帧
+    auto frame0 = SpriteFrame::createWithTexture(texture, Rect(132*0, 132*0, 132, 132));
+    auto frame1 = SpriteFrame::createWithTexture(texture, Rect(132*1, 132*0, 132, 132));
+    auto frame2 = SpriteFrame::createWithTexture(texture, Rect(132*2, 132*0, 132, 132));
+    auto frame3 = SpriteFrame::createWithTexture(texture, Rect(132*3, 132*0, 132, 132));
+    auto frame4 = SpriteFrame::createWithTexture(texture, Rect(132*0, 132*1, 132, 132));
+    auto frame5 = SpriteFrame::createWithTexture(texture, Rect(132*1, 132*1, 132, 132));
+     
+    auto sprite2 = Sprite::createWithSpriteFrame(frame0);
+    sprite2->setPosition(Vec2(visibleSize.width/2, visibleSize.height/2));
+    this->addChild(sprite2);
+     
+    //保存图片帧
+    //Vector<cocos2d::AnimationFrame *> array;
+    Vector<cocos2d::SpriteFrame *> array;
+    array.pushBack(frame0);
+    array.pushBack(frame1);
+    array.pushBack(frame2);
+    array.pushBack(frame3);
+    array.pushBack(frame4);
+    array.pushBack(frame5);
+     
+    auto animation2 = Animation::createWithSpriteFrames(array, 0.2f);   //此处createWithSpriteFrames()函数确实每帧间隔时间参数，需自行加上去！！！
+    sprite2->runAction(RepeatForever::create(Animate::create(animation2)));
+     
+     
+    //方式三,通过.plist 文件来创建
+    auto cache = SpriteFrameCache::getInstance();
+    cache->addSpriteFramesWithFile("animate.plist");
+     
+    auto sprite3 = Sprite::createWithSpriteFrameName("grossini_dance_05.png");
+    sprite3->setPosition(Vec2(visibleSize.width*0.7, visibleSize.height/2));
+    this->addChild(sprite3);
+     
+    Vector<cocos2d::SpriteFrame *> arr;
+    char str[100] = {0};
+    for (int i=1; i<15; i++)
+    {
+        sprintf(str, "grossini_dance_%02d.png", i);
+        auto frame_2 = cache->SpriteFrameCache::getInstance()->getSpriteFrameByName(str);   //3.2版本有改变
+        arr.pushBack(frame_2);
+    }
+     
+    auto animation3 = Animation::createWithSpriteFrames(arr, 0.2f);     //此处也不要忘记加上时间间隔参数
+    sprite3->runAction(RepeatForever::create(Animate::create(animation3)));
+     
+    return true;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////粒子系统
+/////////////////////////////////////
+//将图片纹理添加到缓存， CCTextureCache::sharedTextureCache()->addImage(“fire.png”)将返回一个TEXTURE
+CCTexture2D* fire = CCTextureCache::sharedTextureCache()->addImage(“fire.png”);
+//创建粒子，使用自带得火焰系统
+CCParticleSystem* fireParticle = CCParticleFire::create();
+//设置每个粒子的纹理
+fireParticle->setTexture(fire);
+this->addChild(fireParticle);
+fireParticle->setPosition(point(200,100));
+系统自带,太阳效果  CCParticleSun
+系统自带，蓝色旋转粒子 CCParticleGalaxy
+系统自带，不断交替的彩球 CCParticleFlower
+系统自带，流行下坠 CCParticleMeteor
+系统自带，滚龙 CCParticleSpiral
+系统自带，烟花爆炸，一次 CCParticleExplosion
+系统自带，吸烟烟雾 CCParticleSmoke
+系统自带，下雪 CCParticleSnow
+系统自带，下雨 CCParticleRain
+
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////创建一个物理引擎
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
+Scene* TollgateScene::scene()
+{
+    auto scene = Scene::createWithPhysics();
+    /* 微重力世界 */
+    Vect gravity(0, -0.5f);
+    scene->getPhysicsWorld()->setGravity(gravity);
+    /* 开启测试模式 */
+    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    //创建一个边界
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    /*
+        创建一个空心盒子刚体，作为我们游戏世界的边界（避免游戏内的物体跑出屏幕）
+        参数分别是刚体大小、材质（其实就是一些预设的配置数据）、边线厚度
+    */
+    auto body = PhysicsBody::createEdgeBox(Size(visibleSize.width, visibleSize.height), PHYSICSBODY_MATERIAL_DEFAULT, 3);
+    /* 创建一个节点，用于承载刚体，这样刚体就能参与到游戏的物理世界 */
+    auto node = Node::create();
+    node->setPosition(Point(visibleSize.width / 2, visibleSize.height / 2));
+    node->setPhysicsBody(body);
+    scene->addChild(node);
+    auto layer = TollgateScene::create();
+    scene->addChild(layer, 10);
+    return scene;
+}
+////////////// CREATE宏定义的内容
+MainScene *MainScene::create1()
+{
+    auto pRet = new MainScene;
+    if(pRet && pRet->init())
+    {
+        pRet->autorelease();
+        return pRet;
+    }
+    else{
+        delete pRet;
+        pRet = NULL;
+        return nullptr;
+    }
+}
+
+//////////////遍历当前层的所有精灵
+Size winsize = Director::getInstance()->getWinSize();
+    auto sp = this->getChildren();//获取这个层中所有孩子
+    for(auto a : sp)
+    {
+        a->setPosition(a->getPositionX(),a->getPositionY()-2);
+
+        if(a->getPositionY()<0)
+            a->setPosition(a->getPositionX(),winsize.height-2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

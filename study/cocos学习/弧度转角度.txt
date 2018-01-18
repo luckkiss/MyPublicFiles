@@ -1,0 +1,23 @@
+Point moveVector = touchLocation - dragon->getPosition();
+
+float distanceToMove = ccpLength(moveVector);
+float moveAngle = ccpToAngle(moveVector);
+float cocosAngle = CC_RADIANS_TO_DEGREES(-1 * moveAngle);
+
+float dragonVelocity = 480.0 / 3.0;
+float moveDuration = distanceToMove / dragonVelocity;
+
+cocosAngle += 23;
+if (cocosAngle < 0)
+{
+    cocosAngle += 360;
+}
+
+int runAnim = (int)((cocosAngle)/45);
+
+因此，现在我们需要计算出如何旋转dragon：
+
+计算touch点到dragon当前位置的向量
+计算这个向量的长度（这里是像素长度）
+计算move向量的弧度
+把弧度转换成角度（因为cocos2d-x使用的是角度）

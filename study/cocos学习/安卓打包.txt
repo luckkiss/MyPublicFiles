@@ -1,0 +1,96 @@
+cd desktop
+cd cocos2d-x-3.5-tizen
+./setup.py 可查看环境路径
+
+ pico  .bash_profile
+
+3.5 3.6里面build_native.py里面有一行是这样的：
+    command = 'cocos compile -p android -s %s -m %s' % (app_android_root, build_mode) 
+我把它改成了：
+    COCOS_CONSOLE_ROOT = os.environ['COCOS_CONSOLE_ROOT']
+    command = '%s/cocos compile -p android -s %s -m %s' % (COCOS_CONSOLE_ROOT, app_android_root, build_mode)    
+
+查看java链接到了哪里：ls -l java 
+
+配置环境变量，打开"终端"，输入"pico .bash_profile"命令
+
+export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+
+export COCOS_CONSOLE_ROOT=/Users/y/Desktop/cocos2d-x-3/tools/cocos2d-console/bin
+export PATH=$COCOS_CONSOLE_ROOT:$PATH
+ 
+export NDK_ROOT=/Users/y/Desktop/zhong/adt-bundle-mac-x86_64-20140702/android-ndk-r9d
+export PATH=$NDK_ROOT:$PATH
+ 
+export ANDROID_SDK_ROOT=/Users/y/Desktop/zhong/adt-bundle-mac-x86_64-20140702/sdk
+export PATH=$ANDROID_SDK_ROOT:$PATH
+ 
+export ANT_ROOT=/Users/y/Desktop/zhong/adt-bundle-mac-x86_64-20140702/apache-ant-1.9.6/bin
+export PATH=$ANT_ROOT:$PATH
+配置好之后，输入"Ctrl + X"保存内容，然后输入"Y"确定，点击回车，环境变量就配置好了。
+
+更新刚配置的环境变量
+ 	输入source .bash_profile
+
+查看ant 是否安装：ant -version
+
+若成功，则会显示版本：
+Apache Ant(TM) version 1.9.4 compiled on April 29 2014
+查看java是否安装: java -version
+
+若成功，则会显示版本：
+Java HotSpot(TM) 64-Bit Server VM (build 25.25-b02, mixed mode)
+
+进入项目目录
+cocos compile -p android 编译
+cocos run -p android -j 4 直接编译到手机
+
+project上右键properties, 然后java build path ，再点击ORDER AND EXPORT 个别库没有勾选
+
+
+//************************************//
+
+Can't find right android-platform for project : "D:\coco2dx\cocos2dx3.2\cocos2d-x-3.2\project\HelloGame\proj.android". The android-platform should be equal/larger than 20
+出现这个错误，大概是由于你Android项目下的cocos2d\cocos\platform\android\java\project.properties
+里的值设置不合理。 
+
+1）用记事本打开   
+android.library=true
+# Project target.
+target=android-20   （值为20）
+
+2）再查看本机器的sdk路径下  sdk\platforms\android-19, 只有这一个
+所以会出错platform should be equal/larger than 20
+
+故改正原因：将target=改为小于等于19就 ok 大公告成
+
+//************************************//
+
+Cocos2d-x3.2版本移植安卓提示'Serializing CDT Project settings..'has encountered a project
+
+
+.cproject删除里边内容
+
+
+3)每一个.h头文件里都要加#include “cocos2d.h”
+
+//************************************//
+
+3.5 3.6里面build_native.py里面有一行是这样的：
+    command = 'cocos compile -p android -s %s -m %s' % (app_android_root, build_mode) 
+我把它改成了：
+    COCOS_CONSOLE_ROOT = os.environ['COCOS_CONSOLE_ROOT']
+    command = '%s/cocos compile -p android -s %s -m %s' % (COCOS_CONSOLE_ROOT, app_android_root, build_mode)    
+
+//************************************//
+打包ios包
+
+4.2 手动压缩改后缀方式
+
+这种方式与4.1的方法本质是一样的。
+
+Step1: 新建“Payload”文件夹，注意名字要一字不差；
+
+Step2: 将你的.app包放到Payload中，注意app的名字不做任何更改，就用xcode生成的app名称；
+
+Step3: 在Payload文件夹上右键压缩成zip，然后将生成的.zip文件后缀改成.ipa即可

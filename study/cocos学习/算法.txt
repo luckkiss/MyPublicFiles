@@ -1,0 +1,78 @@
+//快速排序
+#include <stdio.h>
+int a[101],n;
+
+void quicksort(int left,int right)
+{
+//left == 1  right == n
+	int i,j,t,temp;
+	if(left>right)
+		return;
+
+	temp = a[left];
+	i = left;
+	j = right;
+	while(i!=j)
+	{
+		while(a[j]>=temp && i<j)
+			j--;
+		while(a[i]<=temp && i<j)
+			i++;
+		if(i<j)
+		{
+			t = a[i];
+			a[i] = a[j];
+			a[j] = t;
+		}
+	}
+	a[left] = a[i];
+	a[i] = temp;
+
+	quicksort(left,i-1);
+	quicksort(i+1,right);
+}
+int main()
+{
+	quicksort(1,n);
+}
+
+
+
+
+//lianxi 
+int daan[20];
+int temp[111];
+int k=0;
+int a[20]={6,4,1,7,5,8,9,2,4};
+void jiemi(int n)
+{
+	int j=0;
+	for(int i=1;i<=n;i++)
+	{	
+		if(i%2==1)//ji
+			daan[k++]=i;
+		if(i%2==0)//ou
+			temp[j++]=a[i];
+	}
+	jiemi(j);
+}
+
+//
+int a[111]={6,4,1,7,5,8,9,2,4};
+int b[10];
+int main()
+{
+	int head,tail;
+	head = 0,tail = 10;
+	while(head<tail)
+	{
+		b[k++] = a[head];
+		head++;
+		a[tail-1] = a[head];
+		head++;
+		tail++;
+	}
+}
+
+
+

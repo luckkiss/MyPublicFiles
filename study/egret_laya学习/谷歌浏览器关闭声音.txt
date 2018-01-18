@@ -1,0 +1,3 @@
+
+chrome://flags/#enable-tab-audio-muting
+启用 可控制标签页声音的界面控件

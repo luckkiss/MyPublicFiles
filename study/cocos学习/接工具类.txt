@@ -1,0 +1,4 @@
+在 classes 里放入组 android Cocos2dx Utils,
+在ios里放入组third_party_sdk,
+在Build Phases的Link Binart With Libraries里加入报红的.a库文件
+在Compile Sources里报错的类加-fobjc-arc。

@@ -1,0 +1,12 @@
+
+读取plist加入缓存可以直接做动画
+SpriteFrameCache *frameCache = SpriteFrameCache::getInstance();
+
+frameCache->addSpriteFramesWithFile("boy.plist","boy.png");//boy.png里集合了boy1.png,boy2.png这些小图
+
+auto frame_sp = Sprite::createWithSpriteFrameName("boy1.png");//从SpriteFrameCache缓存中找到boy1.png这张图片.
+
+this->addChild(frame_sp,2);
+
+动画编辑器
+传入一个delay

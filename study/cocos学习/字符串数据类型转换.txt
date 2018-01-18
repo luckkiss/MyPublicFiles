@@ -1,0 +1,57 @@
+
+std::string
+const char* :相当于普通输入字符串 比如：“abc” 可等于char name[num]
+CCString :也就是 __String
+	创建它的主要的静态函数如下：
+	_static __String * create(const std::string &str)
+	_static__String* createWitnFormat(const char* format,......)
+
+0
+string 转 const char* 
+	-> .c_str()
+比如：
+	string name;
+	const char* aa = name.c_str();
+1
+string 转 CCString
+比如：
+	std::string string = "Hi Micheal";
+	__String * ns = CCString::CreateWithFormat("%s",string.c_str());
+2
+const char* 转 CCString	
+比如：
+	CCString * key = CCString::createWithFormat(“%s”,type);
+3
+CCString 转 const char*
+比如：
+	__String * name = __String::Create("Hi Micheal');
+	const char * cstring = name->getCstring();
+4
+CCString 转换为int类型
+比如：
+	int num = 123;
+	__String * ns = CCString::createWithFormat("%d",num);
+	int num2 = ns->intValue();//将CCString转换为int的方法,转成float类型有floatValue()
+5
+const char* 转 int
+int atoi(const char *);
+比如：
+	int value = atoi(((CCString *)element->getObject())->getCString());
+6
+const char* 转 string
+比如：
+Util_stringWithFormat( const char* str, ... )
+
+7
+char find[20] = {0};
+sprintf(find, "%d*%d", gameinRow, gameinCol);//将一串字符串赋给char[]
+
+int iconIndex=1;
+    sscanf(sourceStr,"h%d.png",&iconIndex);
+
+/*————————————*/
+char g_buf[65535];
+char* pBuf = g_buf;//char[]直接赋给char*
+
+string tmp = "";
+tmp = pBuf;//char*直接赋给string

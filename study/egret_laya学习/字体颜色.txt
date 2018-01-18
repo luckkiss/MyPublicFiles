@@ -1,0 +1,9 @@
+    //---绿色字：22号  颜色：#009403，如：XXXXXX（＋50）
+    public static PANEL_CONTENT_ADD_LABEL: Object = {
+        "color": 0X009403//字体颜色
+    };
+    //通用的蓝色字：22号  颜色：#034e88
+    public static COMMON_BLUE_LABEL:Object= {
+        "color": 0X034e88//字体颜色
+
+    };

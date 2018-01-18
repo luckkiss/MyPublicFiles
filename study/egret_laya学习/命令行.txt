@@ -1,0 +1,22 @@
+
+
+//创建
+egret create test1 --type gui
+
+
+//编译
+egret build test1
+
+//运行
+egret startserver test1
+
+执行:egret upgrade (项目名称) egret build -e (项目名称)升级项目引擎。 
+
+ERR_CONNECTION_REFUSED：
+7012 y$ egret startserver -port 3001 -a
+
+解锁GenSource
+chmod 777 GenResource
+
+//发布成release
+egret publish

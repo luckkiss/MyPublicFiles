@@ -1,0 +1,408 @@
+关闭
+
+登录 | 注册
+关东升iOS技术顾问、iOS企业内训、专注于iOS最新技术研究与应用
+目录视图摘要视图订阅
+Markdown那么好，还不来试试     中国云计算大会最新议题     5月问答又送C币咯！     Hadoop实战高手速成宝典    
+ Cocos2d-x中Vector<T>容器以及实例介绍
+分类： 游戏 游戏开发 android iOS开发那些事 iphone 2014-10-12 20:45 4030人阅读 评论(1) 收藏 举报
+cocos2d-x游戏cocos2d
+目录(?)[+]
+Vector<T> 是Cocos2d-x 3.x推出的列表容器，因此它所能容纳的是Ref及子类所创建的对象指针，其中的T是模板，表示能够放入到容器中的类型，在Cocos2d-x 3.x中T表示Ref类。Vector<T>是模仿C++的std::vector<T>模板类而设计的。在内存管理方面不使用__Array的引用计数，它的内存管理是由编译器自动处理的，可以不用考虑内存释放问题。Vector<T>的性能优于__Array类，Coco2d-x官方将Vector<T>设计为__Array的替代品，推荐使用Vector<T>类。
+ 
+
+1、创建Vector对象
+
+创建Vector对象有很多函数，下面是总结常用的函数：
+
+ Vector()。默认的构造函数。
+
+ Vector(ssize_t capacity)。创建Vector对象，并设置容量。
+
+ Vector(const Vector<T> &other) 。用一个已存在的Vector对象创建另一个Vector对象，其中&other是左值引用参数传递。
+
+ Vector(Vector<T> &&other) 。用一个已存在的Vector对象创建另一个Vector对象，其中&&other是右值引用参数传递。
+
+ 
+
+提示  左值与右值？C++中所有的表达式和变量要么是左值，要么是右值。左值的定义就是非临时变量，可以在多条语句中使用的变量。右值是指临时的变量，它们只在当前的语句中有效。例如在语句int i = 0;中i为左值，0位右值。左值与右值还可以出现在函数参数列表中,即左值引用（&）和右值引用（&&），如下代码所示。
+
+void process_value(int& i) {  //& i表示左值引用
+
+  std::cout << "左值引用: " << i << std::endl; 
+
+} 
+
+ 
+
+void process_value(int&& i) {   //&& i表示右值引用
+
+  std::cout << "右值引用: " << i << std::endl; 
+
+} 
+
+ 
+
+int main() { 
+
+  int a = 0; 
+
+  process_value(a);  //调用void process_value(int& i)函数
+
+  process_value(1);  //调用void process_value(int&& i)函数
+
+}
+
+ 
+
+2、添加元素
+
+向Vector对象中添加元素都必须是Ref对象指针类型，下面是总结常用的函数：
+
+void pushBack(T object) 。添加一个元素，T表示Ref对象指针类型。
+
+ void pushBack(const Vector<T> &other)。把一个Vector对象中所有元素添加到当前Vector对象中。 
+
+ void insert(ssize_t index, T object) 。在指定位置插入元素，ssize_t是int类型别名。
+
+ 
+
+3、移除元素
+
+下面是总结常用的移除Vector<T>容器中元素的函数：
+
+void popBack()。移除最后一个元素。
+
+ void eraseObject(T object, bool removeAll=false)。移除某个元素。 
+
+iterator erase(iterator position)。指定位置移除对象，参数是迭代器，而返回值是下一个迭代器。
+
+iterator erase(iterator first, iterator last)。指定移除对象范围（first~last），参数是迭代器，而返回值是下一个迭代器。
+
+ iterator erase(ssize_t index)。移除一个指定索引的元素，参数是ssize_t，而返回值是下一个迭代器。
+
+ void clear ()。移除所有元素。
+
+ 
+
+4、替换和交换元素
+
+我们还可以通过下面函数对Vector容器中元素替换和交换：
+
+ void swap(T object1, T object2)。交换2个元素。 
+
+ void swap(ssize_t index1, ssize_t index2)。交换2个指定位置元素。 
+
+void replace(ssize_t index, T object)。用一个对象替代指定位置元素。
+
+ 
+
+5、查找操作
+
+我们有的时候还需要操作Vector中的元素，下面是总结常用的查找函数：
+
+ iterator find (T object)。查找Vector容器中的对象，返回值迭代器。 
+
+T at(ssize_t index)。根据索引位置返回Vector容器中的元素。
+
+T front()。返回第一个元素。
+
+T back ()。返回最后一个元素。
+
+T getRandomObject()。返回随机元素。
+
+bool contains(T object)。返回某个元素是否存在容器中。
+
+ssize_t getIndex (T object)。返回指定对象的位置。
+
+ 
+
+6、其它操作函数
+
+此外还有很多操作Vector对象函数，下面是总结常用的函数：
+
+ssize_t size ()。返回元素个数。 
+
+ssize_t capacity()。返回Vector的容量。 
+
+ 
+
+实例：Vector容器
+为了熟悉Vector类的主要函数，下面我们将13.2.2一节的实例通过Vector列表容器实现一下。如图13-3所示场景，点击右下角的Go按钮，在场景中添加100个精灵。
+
+下面我们看看代码部分，HelloWorldScene.h代码如下： 
+
+
+[html] view plaincopy
+#ifndef __HELLOWORLD_SCENE_H__  
+#define __HELLOWORLD_SCENE_H__  
+   
+#include "cocos2d.h"  
+   
+#define MAX_COUNT 100  
+   
+class HelloWorld : public cocos2d::Layer  
+{  
+cocos2d::Vector<cocos2d::Sprite*> list;   ①  
+public:  
+    static cocos2d::Scene* createScene();  
+   
+    virtual bool init();    
+      
+    void menuCloseCallback(cocos2d::Ref* pSender);  
+      
+    CREATE_FUNC(HelloWorld);  
+};  
+   
+#endif // __HELLOWORLD_SCENE_H__  
+
+
+上述代码与13.2.2一节实例比较，我们将list成员变量类型换成了cocos2d::Vector<cocos2d::Sprite*>，见第①行代码所示。注意我们不再需要析构函数声明了，使用Vector比较方便的是内存管理由编译器自动处理的系统。
+
+HelloWorldScene.cpp中的主要代码如下：
+
+
+[html] view plaincopy在CODE上查看代码片派生到我的代码片
+bool HelloWorld::init()  
+{  
+if ( !Layer::init() )  
+{  
+return false;  
+}  
+   
+Size visibleSize = Director::getInstance()->getVisibleSize();  
+Vec2 origin = Director::getInstance()->getVisibleOrigin();  
+   
+auto goItem = MenuItemImage::create(  
+"go-down.png",  
+"go-up.png",  
+CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));  
+   
+goItem->setPosition(Vec2(origin.x + visibleSize.width - goItem->getContentSize().width/2 ,  
+origin.y + goItem->getContentSize().height/2));  
+   
+auto menu = Menu::create(goItem, NULL);  
+menu->setPosition(Vec2::ZERO);  
+this->addChild(menu, 1);  
+   
+this->list = Vector<Sprite*>(MAX_COUNT);   ①  
+   
+for(int i = 0;i < MAX_COUNT; ++i){   ②  
+Sprite* sprite = Sprite::create("Ball.png");  
+this->list.pushBack(sprite); ③  
+}  
+   
+return true;  
+}  
+   
+   
+void HelloWorld::menuCloseCallback(Ref* pSender)  
+{  
+Ref* obj = nullptr;  
+log("List count = %d",this->list.size());  
+Size visibleSize = Director::getInstance()->getVisibleSize();  
+   
+for(const auto& sprite : this->list) ④  
+{  
+int x = CCRANDOM_0_1() * visibleSize.width;  
+int y = CCRANDOM_0_1() * visibleSize.height;  
+   
+sprite->setPosition( Vec2(x, y) );  
+this->removeChild(sprite);  
+this->addChild(sprite);  
+}  
+   
+}  
+
+
+上述代码第①行this->list = Vector<Sprite*>(MAX_COUNT)是创建Vector 类型的list成员变量，并指定Vector容器内存放的是Sprite指针类型，Vector构造函数参数是容器的初始化容量。第②行代码进行for循环创建100个精灵对象。第③行代码this->list.pushBack(sprite)是将精灵对象添加到list容器对象中，pushBack是Vector通过的添加元素函数，由于在第①行设置list容器的模板为Sprite指针，所以pushBack函数只能放过Sprite和其子类指针类型。
+
+第④行代码for(const auto& sprite : this->list){…}是循环遍历list容器对象，这里使用的循环是C++11规范的新功能range-based for loops，range-based for loops被翻译为“序列for循环语句”，序列for循环语句允许重复遍历一组序列，而这组序列可以是任何可以重复遍历的序列，所有C++标准容器数据容器都可用作这种序列。for中声明引用类型（auto&）可以便于在循环体中修改元素，声明为const auto&可以提高执行的效率。
+
+ 
+
+提示  在遍历Vector容器时候还可以使用C++中迭代器进行遍历，参看代码如下。Vector中定义了相关的begin()和end()函数。
+
+
+[html] view plaincopy在CODE上查看代码片派生到我的代码片
+for (Vector<Sprite*>::const_iterator it = this->list.begin(); it != this->list.end(); ++it)  
+{  
+int x = CCRANDOM_0_1() * visibleSize.width;  
+int y = CCRANDOM_0_1() * visibleSize.height;  
+Sprite* sprite = *it;   //解引用操作符（*操作符）来访问迭代器所指向元素  
+   
+sprite->setPosition( Vec2(x, y) );  
+this->removeChild(sprite);  
+this->addChild(sprite);  
+}  
+更多内容请关注最新Cocos图书《Cocos2d-x实战 C++卷》本书交流讨论网站：http://www.cocoagame.net
+更多精彩视频课程请关注智捷课堂Cocos课程：http://v.51work6.com
+欢迎加入Cocos2d-x技术讨论群：257760386
+
+《Cocos2d-x实战 C++卷》现已上线，各大商店均已开售：
+京东：http://item.jd.com/11584534.html
+
+亚马逊：http://www.amazon.cn/Cocos2d-x%E5%AE%9E%E6%88%98-C-%E5%8D%B7-%E5%85%B3%E4%B8%9C%E5%8D%87/dp/B00PTYWTLU
+
+当当：http://product.dangdang.com/23606265.html
+
+互动出版网：http://product.china-pub.com/3770734
+
+
+《Cocos2d-x实战 C++卷》源码及样章下载地址：
+
+源码下载地址：http://51work6.com/forum.php?mod=viewthread&tid=1155&extra=page%3D1 
+
+样章下载地址：http://51work6.com/forum.php?mod=viewthread&tid=1157&extra=page%3D1
+
+欢迎关注智捷iOS课堂微信公共平台
+
+
+上一篇Cocos2d-x中__Array容器以及实例介绍
+下一篇Cocos2d-x中__Dictionary容器以及实例介绍
+顶
+1
+踩
+0
+主题推荐cocos2d-x实例内存管理编译器亚马逊
+猜你在找
+修改Cocos2dx中的CCMessageBox的按钮文字cocos2d各种动作的使用变色跳动旋转闪烁悬挂放大缩小渐变animation三COCOS2D-X 网络篇---强联网采用技术 BSD SOCKET+多线程技术 +protobuf客户端实战篇Cocos2d-x 30开发六使用cocoStudio创建一个骨骼动画初学cocos2dx lua
+【精品课程】Cocos2d-X开发教程-捕鱼达人【精品课程】Part 1：基础语言-Cocos2d-x手机游戏开发必备C++语言基础【精品课程】太空大战游戏实战课程【精品课程】Cocos2d-Lua进阶篇（quick）【精品课程】Part 3：Cocos2d-x开发基础-第一个Cocos程序
+准备好了么？ 跳吧             ！更多职位尽在 CSDN JOB
+游戏cocos2D-x开发工程师
+上海巨人网络有限公司|15-25K/月我要跳槽
+cocos2d-x开发
+数库财务咨询有限公司|10-20K/月我要跳槽
+cocos2d-x开发工程师
+北京互娱科技有限公司|18-35K/月我要跳槽
+客户端程序 （Cocos2D-X C++)
+北京微游互动网络科技有限公司|8-14K/月我要跳槽
+
+查看评论
+1楼 天有喜于我_我必勤学以报之 2014-10-14 06:20发表 [回复]
+
+Vector<T>是模仿C++的std::vector<T>模板类而设计的。在内存管理方面不使用__Array的引用计数，它的内存管理是由编译器自动处理的，可以不用考虑内存释放问题。
+
+void pushBack(T object)
+{
+CCASSERT(object != nullptr, "The object should not be nullptr");
+_data.push_back( object );
+object->retain();//这里不还是老一套吗？
+}
+
+erase中 调用object->release();
+您还没有登录,请[登录]或[注册]
+* 以上用户言论只代表其个人观点，不代表CSDN网站的观点或立场
+
+核心技术类目
+全部主题 Hadoop AWS 移动游戏 Java Android iOS Swift 智能硬件 Docker OpenStack VPN Spark ERP IE10 Eclipse CRM JavaScript 数据库 Ubuntu NFC WAP jQuery BI HTML5 Spring Apache .NET API HTML SDK IIS Fedora XML LBS Unity Splashtop UML components Windows Mobile Rails QEMU KDE Cassandra CloudStack FTC coremail OPhone CouchBase 云计算 iOS6 Rackspace Web App SpringSide Maemo Compuware 大数据 aptech Perl Tornado Ruby Hibernate ThinkPHP HBase Pure Solr Angular Cloud Foundry Redis Scala Django Bootstrap
+智捷iOS课堂
+智捷iOS课堂-大量免费iOS视频-http://v.51work6.com
+大家一起学习探讨
+技术讨论群cocos2d-x群：257760386；iOS学习讨论qq群：286411514/204462948 技术讨论论坛www.cocoagame.net
+个人资料
+ 访问我的空间 
+关东升
+ 
+ 6  1
+访问：599062次
+积分：9120
+等级： 
+排名：第763名
+原创：293篇转载：28篇译文：0篇评论：257条
+我的课程 更多
+Cocos2d-x实战-手把手教你上线项目-迷失航线	Cocos2d-x实战-手...
+难度：高级
+类型：实战教学
+Part 5：Cocos2d-x开发实战-Cocos中精灵	Part 5：Cocos2...
+难度：中级
+类型：技术教程
+Part 4：Cocos2d-x开发实战-Cocos中的字符串、标签和菜单	Part 4：Cocos2...
+难度：中级
+类型：技术教程
+文章搜索
+
+博客专栏
+	Cocos2d-x实战
+文章：78篇
+阅读：132626
+	iOS经典应用剖析
+文章：10篇
+阅读：16483
+	iOS开发那些事
+文章：54篇
+阅读：187714
+我的新浪微博
+
+文章分类
+android(48)
+游戏(159)
+网络游戏(137)
+视频(8)
+游戏视频(7)
+游戏开发(158)
+iphone(148)
+ipad(39)
+ios(47)
+项目开发(8)
+实战(126)
+iOS开发那些事(62)
+iOS网络编程(24)
+采访(2)
+iOS技术图书(4)
+文章存档
+2015年05月(11)
+2015年04月(9)
+2015年03月(20)
+2015年01月(1)
+2014年12月(2)
+展开
+阅读排行
+申请Google Map Android API Key(16856)
+推送通知iOS客户端编写实现及推送服务器端编写(12918)
+iOS-获取当前时间的年、月、日、时、分、秒(11427)
+iOS网络编程实践--NSStream实现TCP Socket iPhone客户端(10096)
+iOS网络编程实践--蓝牙对等网络通信实例讲解(8618)
+利用iOS API编写简单微博客户端全过程(8611)
+iOS开发那些事-iOS6苹果地图实用开发(8000)
+iOS 6分享列表——UIActivityViewController详解(7662)
+iOS开发那些事-移动平台架构设计(7555)
+iOS开发那些事-nib实现标签导航(7125)
+评论排行
+iOS开发那些事-nib实现标签导航(17)
+我的iOS视频开放了，欢迎大家在线观看(16)
+申请Google Map Android API Key(15)
+我的作品《iPhone与iPad开发实战—iOS经典应用剖析》--以及源码下载地址(15)
+iOS网络编程实践--蓝牙对等网络通信实例讲解(12)
+《iOS开发指南》正式出版-源码-样章-目录，欢迎大家提出宝贵意见(10)
+iOS开发那些事-移动平台架构设计(8)
+我为什么写书？(8)
+《iOS网络编程与云端应用最佳实践》上线了-源码下载，样章-正式发售了(7)
+关于《Swift开发指南》背后的那些事(7)
+推荐文章
+
+最新评论
+《iOS网络编程与云端应用最佳实践》上线了-源码下载，样章-正式发售了
+xijiangyueal: 关老师，您好！书本写得很详细，很好，但是按照书上去iOSBook3.com注册了，提供了email参...
+Cocos2d-JS中的精灵菜单和图片菜单
+hongxu87: 关老师，我是您的读者。我有个疑惑，cocos2d-x 可以从网络下载图片当做精灵，但是在cocos2...
+Swift静态属性
+JackLeeMing: 在类中Xcode6.3下如下是可以的static var interestRate : Double...
+全国首发-Swift视频教程-共68课时（已更新完成）
+goooooofy: 最近在看关老师的书籍，学习swift的时候顺便学一下oc感觉学到了很多东西
+《Cocos2d-x实战 Lua卷》上线了
+wenhjx: 2.6.2 最后例子的输出结果最后有一行a == b 不知道是哪来的...
+《Cocos2d-x实战 Lua卷》上线了
+wenhjx: 2.5.1 第五点第六点一样的2.6.2 ~=的说明不对
+Cocos2d-js中Chipmunk引擎
+MingZznet: 你好，我在用chipmunk的时候，遇到个问题，一直解决不了，就是 没办法控制chipmunk的弹性...
+Cocos2d-js中Chipmunk引擎
+MingZznet: 你好，我在用chipmunk的时候，遇到个问题，一直解决不了，就是 没办法控制chipmunk的弹性...
+《Cocos2d-x实战 Lua卷》上线了
+dancer18: 今天看到LUA卷70页的代码示例，发现出现了2句“--开始游戏调度”，第二句应该是“--结束游戏调度...
+《Cocos2d-x实战 Lua卷》上线了
+dancer18: 微博看见这条消息就京东买了一本LUA卷，，今天看到70页代码示例里面的注释出现了错误，两句注释都是“...
+公司简介|招贤纳士|广告服务|银行汇款帐号|联系方式|版权声明|法律顾问|问题报告|合作伙伴|论坛反馈
+网站客服杂志客服微博客服webmaster@csdn.net400-600-2320|北京创新乐知信息技术有限公司 版权所有|江苏乐知网络技术有限公司 提供商务支持
+京 ICP 证 070598 号|Copyright © 1999-2014, CSDN.NET, All Rights Reserved GongshangLogo
+  

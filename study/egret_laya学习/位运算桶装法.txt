@@ -1,0 +1,10 @@
+
+this.guide = 65535;
+public setGuideState(key:number){
+        this.guide &= ~key;
+}
+public getGuideState(key:number):boolean{
+	return (this.guide & key) != 0; 
+}
+
+key = 1,2,4,8,10,20,40

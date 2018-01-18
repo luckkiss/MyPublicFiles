@@ -1,0 +1,496 @@
+/**
+ *
+ * @author zhongky
+ *  贸易
+ */
+class TradeMainUI extends BaseContent {
+
+    public info:TradeMainInfo;
+    public _searchinfo:TradeSearchPathInfo;
+
+    public m_allNodeGro:eui.Group;
+    public m_rightArrowGro:eui.Group;
+    public m_bgGroup:eui.Group;
+    public m_closebtn:eui.Image;
+    public m_helpbtn:eui.Image;
+    public m_xiezhuGro:MyTouchImage;
+    public m_rankGro:MyTouchImage;
+    public m_gaizaoGro:MyTouchImage;
+    public m_arrowDown:eui.Group;
+    public m_bottomArrowGro:eui.Group;
+    
+    public m_pMainSp:TradeSingleMap;//左右中三个地图
+    public m_pLSP:TradeSingleMap;
+    public m_pRSp:TradeSingleMap;
+
+    public m_tradePortBox:TradePortUI;//港口信息
+    public m_picScroller:PicSrcoller;//货物列表
+
+    public timer:number=0;
+
+    public constructor(argsUpdate:any) {
+        super(argsUpdate);
+        
+        this.skinName=GlobalConst.modelSkinPath + "ui_skins/tradeskins/TradeMainUISkin.exml";
+
+        this._searchinfo = new TradeSearchPathInfo();
+    }
+
+    private ScreenWidth:number;private ScreenHeight:number;
+    protected childrenCreated(): void {
+        super.childrenCreated();
+        this.ScreenWidth = App.StageUtils.getStage().stageWidth;
+        this.ScreenHeight = App.StageUtils.getStage().stageHeight;
+        this.m_allNodeGro.width = this.ScreenWidth;
+        this.m_allNodeGro.height = this.ScreenHeight;
+        this.m_rightArrowGro.width = this.ScreenWidth;
+        this.m_bottomArrowGro.includeInLayout=false;
+        this.m_bottomArrowGro.x = this.ScreenWidth/2 - this.m_bottomArrowGro.width/2;
+        this.m_bottomArrowGro.y = this.ScreenHeight - this.m_bottomArrowGro.height;
+
+        this.m_pMainSp = new TradeSingleMap();
+        this.m_pMainSp.x = 0;
+        this.m_pMainSp.y=0;
+        this.m_pMainSp.name = "mainmap";
+        this.m_bgGroup.addChild(this.m_pMainSp);
+
+        this._leftpos = -this.m_pMainSp.width*0.8;
+        this._rightpos = this.m_pMainSp.width*0.8;
+        this._bottompos = -(this.m_pMainSp.height - this.ScreenHeight);
+
+        this.m_pLSP = new TradeSingleMap();
+        this.m_pLSP.x = -this.m_pMainSp.width;
+        this.m_pLSP.y=0;
+        this.m_pLSP.name = "leftmap";
+        this.m_bgGroup.addChild(this.m_pLSP);
+
+        this.m_pRSp = new TradeSingleMap();
+        this.m_pRSp.x = this.m_pMainSp.width;
+        this.m_pRSp.y=0;
+        this.m_pRSp.name = "rightmap";
+        this.m_bgGroup.addChild(this.m_pRSp);
+
+        this.m_closebtn.touchEnabled=true;
+        this.m_closebtn.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onClose,this);
+
+        this.m_helpbtn.touchEnabled=true;
+        this.m_helpbtn.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onHelp,this);
+
+        this.m_xiezhuGro.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onXieZhu,this);
+        this.m_rankGro.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onRank,this);
+        this.m_gaizaoGro.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onGaiZhao,this);
+        this.m_arrowDown.addEventListener(egret.TouchEvent.TOUCH_TAP,this.onTouchArrow,this);
+
+        this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this._onTouchBegan, this);
+        this.addEventListener(egret.TouchEvent.TOUCH_MOVE, this._onTouchMove, this);
+        this.addEventListener(egret.TouchEvent.TOUCH_END, this._onTouchEnd, this);
+        App.MessageCenter.addListener(EventConst.TRADE_MESSAGE,this.MessPush,this);
+
+        this.timer = App.TimerManager.doTimer(1000, 0, this.onTime, this, null, null, true);
+    }
+
+    private onTime(){
+        if(!this.m_bDataReturn)return;//等返回数据再倒计时
+
+        if(this.info.obj.L>0){//L:下次刷新时间,秒
+            this.info._label2 = DateUtils.getInstance().getFormatBySecond(this.info.obj.L--,1);
+            if(this.info.obj.L == 0){
+                this.update();
+            }
+        }
+        if(this._isRun){//小船航行倒计时
+            if(this.info.obj.S == 2){
+                if(this.info.obj.T.M>0){
+                    this.info.obj.T.M--;
+                    var _sytime = Number(this.info.obj.T.M);//剩余航行时间
+                    this.m_pMainSp.setMyShipTime(_sytime);
+                    this.m_pLSP.setMyShipTime(_sytime);
+                    this.m_pRSp.setMyShipTime(_sytime);
+
+                    var shipNowPos = this.m_pMainSp._nowPos;//小船所在的点
+                    var thouTime = this.info._PortAllTime - _sytime;//经历了多少时间
+                    // var thouTime = 20 - _sytime;//写死20秒
+                    var shipWantPos = Math.floor(thouTime/this.info._PosTime);//除以单个点所需时间
+                    if(shipWantPos>=shipNowPos){//移动小船
+                        var iEnd = this.m_pMainSp.shipRun(shipWantPos);
+                        this.m_pLSP.shipRun(shipWantPos);
+                        this.m_pRSp.shipRun(shipWantPos);
+
+                        if(iEnd){
+                            this.stopShip();
+                            return;
+                        }
+                    }
+                    if(this.info.obj.T.M == 0){//结束移动
+                        this.stopShip();
+                    }
+                }
+            }
+        }
+    }
+
+    private stopShip(){
+        this.m_pMainSp.initData();
+        this.m_pLSP.initData();
+        this.m_pRSp.initData();
+        this._isRun = false;
+        this.update();
+        this.autoSetShipWinCenter();
+    }
+
+    private m_touchPortId:number=-1;//0-11
+    public MessPush(data: any){
+        var _key = data._key;
+        var _data = data._data;
+        switch(_key){
+            case "showPort"://弹出港口信息
+                if(_data){
+                    this.m_touchPortId = _data.id;
+                    App.Http.send(HttpConst.TradzUI_PortUI,{P: Number(_data.id)+1},this.onShowPortInfo,this);
+                }
+            break;
+            case "goAnoPort"://点击前往港口
+                if(_data){
+                    var toid = _data.toid;
+                    if(toid>=0){
+                        var path = this._searchinfo.searchShortestPath(this.info.obj.D-1,toid);
+                        var arr:Array<number>=[];
+                        for(var i=0;i<path.length;i++)arr[i]=path[i]+1;//后端港口id1~12，前端0~11
+                        App.Http.send(HttpConst.TradzUI_Start,{L:arr},function(obj:any){
+                            //贸易起航
+                            App.SoundManager.playEffect(SoundEffects.VOICE_ORDER_DELIVER);
+                            this.update();
+                        },this);
+                    }
+                    this.m_tradePortBox.visible=false;
+                }
+            break;
+            case "updateMainUI":
+                this.update();
+                this.m_tradePortBox.visible=false;
+            break;
+            case "xiezhuMesReturn":
+                if(_data){
+                    this.m_bNeedFreshData = true;
+                    if(_data.M == 0){//结束移动
+                        this.info.obj.S == 1;
+                        this.info.obj.T.M = 0;
+                        this.m_pMainSp.initData();
+                        this.m_pLSP.initData();
+                        this.m_pRSp.initData();
+                        this._isRun=false;
+                    }else{//还在航行
+                        this.info.obj.S == 2;
+                        this.info.obj.T.M = _data.T.M;
+                        this._isRun=true;
+                    }
+                }
+            break;
+            default:
+            break;
+        }
+    }
+
+    private _distance:egret.Point = new egret.Point();
+    private isTouchMove:boolean=false;
+    private _onTouchBegan(evt:egret.TouchEvent){
+        this._distance.x = evt.stageX - this.m_bgGroup.x;
+        this._distance.y = evt.stageY - this.m_bgGroup.y;
+
+        if(!this.m_tradePortBox.hitTestPoint( evt.stageX, evt.stageY ) ){
+            this.m_tradePortBox.visible=false;
+        }
+    }
+
+    private _leftpos:number;
+    private _rightpos:number;
+    private _bottompos:number;
+    private _toppos:number = 0;
+    private _onTouchMove(evt:egret.TouchEvent){
+
+        if(this.m_tradePortBox.visible || this.m_bottomArrowGro.hitTestPoint( evt.stageX, evt.stageY ))return;
+        
+        var _myx = evt.stageX - this._distance.x;
+        var _myy = evt.stageY - this._distance.y;
+
+        if(Math.abs(_myx - this.m_bgGroup.x) > 10 || Math.abs(_myy - this.m_bgGroup.y) > 10){
+            this.isTouchMove=true;
+        }
+
+        this._judgePos({x:_myx,y:_myy});
+    }
+    
+    private _onTouchEnd(evt:egret.TouchEvent){
+        TimerManager.getInstance().doTimer(300,1,function(){
+            this.isTouchMove = false;
+        },this);
+    }
+
+    private _judgePos(pos:any){
+        //临界判断
+        if( pos.y >= this._toppos ){
+            pos.y = this._toppos;
+        }else if( pos.y <= this._bottompos ){
+            pos.y = this._bottompos;
+        }
+        if( pos.x <= this._leftpos ){//移到最右边
+            this._preSetMapPos(2);
+        }else if( pos.x >= this._rightpos ){//移到最左
+            this._preSetMapPos(0);
+        }
+
+        this.m_bgGroup.x = pos.x;
+        this.m_bgGroup.y = pos.y;
+    }
+
+    //当滑到最左或者最右，移动地图
+    private _preSetMapPos(index:number){
+        var _leftMap = this.m_bgGroup.getChildByName("leftmap");
+        var _mainMap = this.m_bgGroup.getChildByName("mainmap");
+        var _rightMap = this.m_bgGroup.getChildByName("rightmap");
+        switch(index){
+            case 0:
+                _rightMap.x = _leftMap.x - _leftMap.width;
+                this._leftpos += _leftMap.width;
+                this._rightpos += _leftMap.width;
+                _rightMap.name = "leftmap";
+                _leftMap.name = "mainmap";
+                _mainMap.name = "rightmap";
+            break;
+            case 2:
+                _leftMap.x = _rightMap.x + _rightMap.width;
+                this._leftpos -= _leftMap.width;
+                this._rightpos -= _leftMap.width;
+                _mainMap.name = "leftmap";
+                _rightMap.name = "mainmap";
+                _leftMap.name = "rightmap";
+            break;
+        }
+    }
+
+    //把位置定在中间地图的小船
+    public autoSetShipWinCenter(){
+        this.initMapPos();
+
+        var _mainMap = this.m_bgGroup.getChildByName("mainmap") as TradeSingleMap;
+        var m_mainShip:TradeShip = _mainMap.getShip();
+
+        var _xoffset = this.ScreenWidth/2 - m_mainShip.x - m_mainShip.width;
+        var _yoffset = this.ScreenHeight/2 - m_mainShip.y - m_mainShip.height/2;
+        this._judgePos({x:_xoffset,y:_yoffset});
+    }
+
+    private m_bNeedFreshData:boolean=false;
+    private m_bDataReturn:boolean=false;
+    private posany:any={0:0,1:195,2:145,3:90,4:40,5:-13};
+    public update(){
+        App.Http.send(HttpConst.TradzUI_InfoUI,null,function onDataReturn(obj:any){
+            this.info = new TradeMainInfo();
+            this.info.fromObj(obj);
+
+            if(obj.S == 2){//航行中
+                this.info.obj.T.M++;//剩余时间加1，有临界值
+                this.onSetShipRun();
+            }else{//停泊中
+                this.m_pMainSp.setShipPos(obj.D-1);
+                this.m_pLSP.setShipPos(obj.D-1);
+                this.m_pRSp.setShipPos(obj.D-1);
+                if(!this.m_bDataReturn){
+                    this.autoSetShipWinCenter();
+                }
+            }
+
+            var ac = new eui.ArrayCollection(this.info._goodList);
+            this.m_picScroller.setData(ac,TradePortItemRender3,70,5,0,null,null,false,34);
+            if(ac.length<6){
+                this.m_picScroller.hideArrow(false);
+                this.m_picScroller.touchEnabled=false;
+                this.m_picScroller.touchChildren=false;
+                this.m_picScroller.horizontalCenter = this.posany[ac.length];
+            }else{
+                this.m_picScroller.hideArrow(true);
+                this.m_picScroller.touchEnabled=true;
+                this.m_picScroller.touchChildren=true;
+                this.m_picScroller.horizontalCenter = 0;
+            }
+
+            if(this.m_bNeedFreshData){//还没返回数据就收到推送，重新刷新
+                this.m_bNeedFreshData=false;
+                this.update();
+            }
+
+            this.m_bDataReturn=true;
+        },this);
+    }
+    //初始化地图位置，方便定位到小船
+    private initMapPos(){
+        var _leftMap = this.m_bgGroup.getChildByName("leftmap");
+        var _mainMap = this.m_bgGroup.getChildByName("mainmap");
+        var _rightMap = this.m_bgGroup.getChildByName("rightmap");
+        _mainMap.x = 0;
+        _leftMap.x = -this.m_pMainSp.width;
+        _rightMap.x = this.m_pMainSp.width;
+        this._leftpos = -_mainMap.width*0.8;
+        this._rightpos = _mainMap.width*0.8;
+    }
+
+    public back(){
+        this.update();
+    }
+    private onClose(){
+        PanelManager.instance.back();
+    }
+    //帮助
+    private onHelp(){
+        App.PanelManager.popup(PopupFactory.HelpPanel, 0, {id: 81});
+    }
+    //协助
+    private onXieZhu(){
+        App.PanelManager.popup(PopupFactory.TradeFriendHelpUI,null,null,function(){
+            PanelManager.instance.back();
+        });
+    }
+    //排行
+    private onRank(){
+        App.PanelManager.popup(PopupFactory.TradeRankUI,null,null,function(){
+            PanelManager.instance.back();
+        });
+    }
+    //弹出船队改造
+    private onGaiZhao(){
+        var info:any = {E:this.info.obj.E,F:this.info.obj.F};
+        var msg = new TradeShipRemakeUI();
+        msg.setInfo(info);
+        App.MsgBoxManager.msgbox(msg,GlobalConst.modelSkinPath + "container_skins/MsgBoxPanel_Empty.exml",null,this,null);
+    }
+    //弹出港口信息
+    private onShowPortInfo(obj:any){
+        if(this.isTouchMove){
+            this.isTouchMove=false;
+            return;
+        }
+
+        if(obj){
+            var _dis:number=0;//港口距离
+            var _state:number=3;
+             // 当为当前港口时，下方按钮为购买、出售
+            // 当为其它港口时，下方按钮为前往
+            // 当船队航行中时，下方无按钮
+            if(this.info.obj.D){//停泊中点击港口
+                if((this.info.obj.D-1) == this.m_touchPortId){//点击当前货船所在港口
+                    _state = 1;
+                }else{
+                    var path = this._searchinfo.searchShortestPath(this.info.obj.D-1,this.m_touchPortId );
+                    if(path) _dis = path.length-1;
+                    _state = 2;
+                }
+            }else{//航行中
+                if(this.info.obj.T){
+                    var path:Array<number> = this.info.obj.T.L;//后端航行路线 下标1~12
+                    var path2 = this._searchinfo.searchShortestPath(path[0]-1,this.m_touchPortId );
+                    if(path2) _dis = path2.length-1;
+                    else _dis = 0;
+                }else{
+                    _dis=0;
+                }
+                _state = 3;
+            }
+            
+            var info:any = {
+                dis:_dis,
+                toid:this.m_touchPortId,
+                data:obj,
+                state:_state,
+                goodList:this.info._goodList,
+                cangkuLev:this.info.obj.F
+            };
+            this.m_tradePortBox.setInfo(info);
+            this.m_tradePortBox.visible=true;
+        }
+    }
+    private _arrowState=1;//1向下 2向上
+    private _isArrowMove:boolean=false;
+    //点击物品列表箭头
+    private onTouchArrow(){
+        if(this._isArrowMove)return;
+        this._isArrowMove = true;
+        if(this._arrowState == 1){
+            egret.Tween.get(this.m_bottomArrowGro).to({y:this.m_bottomArrowGro.y+110},400,egret.Ease.sineInOut);
+        }else{
+            egret.Tween.get(this.m_bottomArrowGro).to({y:this.m_bottomArrowGro.y-110},400,egret.Ease.sineIn);
+        }
+        TimerManager.getInstance().doTimer(400,1,function(){
+            this._isArrowMove = false;
+            if(this._arrowState == 2){
+                this.info.downArrowRes = "ui_trade_arrow_down_png";
+                this._arrowState = 1;
+            }else{
+                this.info.downArrowRes = "ui_trade_arrow_up_png";
+                this._arrowState = 2;
+            }
+        },this);
+    }
+    public _isRun:boolean=false;
+    //小船航行中
+    private onSetShipRun(){
+        var path:Array<number> = this.info.obj.T.L;//航行路线
+        var time = this.info.obj.T.M;//剩余航行时间
+
+        this.info._PosCount = this.m_pMainSp.setShipRunInfo(path);//航行点数
+        this.m_pLSP.setShipRunInfo(path);
+        this.m_pRSp.setShipRunInfo(path);
+        this.info._PortAllTime = this.info._PortTime * (path.length-1);//航行总时间 = 单港口时间*航行多少个港口
+        // this.info._PortAllTime = 20;//写死20秒
+        this.info._PosTime = this.info._PortAllTime/this.info._PosCount;//一个点所需时间 = 航行总时间/点的个数
+        this.info._endPort = path[path.length-1];
+        this._isRun = true;
+    }
+
+     $onRemoveFromStage(): void {
+        super.$onRemoveFromStage();
+
+        this.m_closebtn.removeEventListener(egret.TouchEvent.TOUCH_TAP,this.onClose,this);
+        this.m_helpbtn.removeEventListener(egret.TouchEvent.TOUCH_TAP,this.onHelp,this);
+        this.m_xiezhuGro.removeEventListener(egret.TouchEvent.TOUCH_TAP,this.onXieZhu,this);
+        this.m_rankGro.removeEventListener(egret.TouchEvent.TOUCH_TAP,this.onRank,this);
+        this.m_gaizaoGro.removeEventListener(egret.TouchEvent.TOUCH_TAP,this.onGaiZhao,this);
+        this.m_arrowDown.removeEventListener(egret.TouchEvent.TOUCH_TAP,this.onTouchArrow,this);
+        this.removeEventListener(egret.TouchEvent.TOUCH_BEGIN, this._onTouchBegan, this);
+        this.removeEventListener(egret.TouchEvent.TOUCH_MOVE, this._onTouchMove, this);
+        this.removeEventListener(egret.TouchEvent.TOUCH_END, this._onTouchEnd, this);
+        App.MessageCenter.removeListener(EventConst.TRADE_MESSAGE,this.MessPush,this);
+
+        this.m_picScroller.destory();
+        App.TimerManager.remove(this.timer);
+        this.timer = null;
+
+        this.info = null;
+        this._searchinfo = null;
+        this.m_allNodeGro = null;
+        this.m_rightArrowGro = null;
+        this.m_arrowDown = null;
+        this.m_bottomArrowGro = null;
+        this.m_pMainSp = null;
+        this.m_pLSP = null;
+        this.m_pRSp = null;
+        this.m_tradePortBox = null;
+        this.m_picScroller = null;
+    }
+
+     // 检查是否有货物
+    // 返回-1 表示未达到判断要求，0表示false 1表示true
+    public checkHuowu(val: number): number {
+        if (this.info == null) {
+            return -1;
+        }
+        if (this.info._goodList.length <= 0) {
+            return 0;
+        }
+
+        return 1;
+    }
+
+
+}
+
+    

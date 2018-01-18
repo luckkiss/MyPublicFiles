@@ -1,0 +1,4 @@
+在AppController.mm中设置
+[eaglView setMultipleTouchEnabled:YES]; 以打开多点触控支持 
+
+Listener 设置为 All at once

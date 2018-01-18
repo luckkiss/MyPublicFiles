@@ -1,0 +1,22 @@
+SysNoticeUI * noticeUI = SysNoticeUI::showUI();
+noticeUI->setCallBack(this, callfunc_selector(LaunchAnimationLayer::noticeEvent));
+
+SysNoticeUI类里：
+void SysNoticeUI::toTouchBtn(CCObject sender)
+{
+    if ( m_target && m_action )
+        (m_target->*m_action)();
+    if (m_bAutoClose) {
+        iPopUpViewManager->removeViewById(ViewID_SysNoticeUI);
+    }
+}
+
+/*点击按钮后回调*/
+void SysNoticeUI::setCallBack( CCObject* target, SEL_CallFunc action)
+{
+    m_target = target;
+    m_action = action;
+}
+
+   (m_target->*m_action)()相当于
+(this->*(callfunc_selector(LaunchAnimationLayer::noticeEvent)))()

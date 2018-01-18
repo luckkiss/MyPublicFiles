@@ -1,0 +1,64 @@
+
+kaiyu.zhong@zhangtongwireless.com  abc123
+赖朗成  14:55:47
+svn://www.ipeaksoft.com:8888/zhangtong
+
+
+
+用SmartSVN提交代码的时候提示：svn: File has inconsistent newlines
+这是由于要提交的文件编码时混合了windows和unix符号导致的。
+解决方法是将其统一编码或者修改SmartSVN提交前的检查设置。
+统一编码在这里就不介绍了，SmartSVN设置做如下修改可以解决问题：
+点击 Project–>Setting，选择Working copy下的EOL-style，将Default EOL-style设置为 As is(no conversion)，并点击ok按钮，即可！
+SmartSVN使用
+在平时的工作中，最常用的版本控制工具就是SmartSvn for Mac客户端，从刚开始接触到现在，也算使用了差不多两年了。其中也了解了一些常见的问题解决方式，现在写出来，供自己以后参考。
+
+1、Check Out--检出一份服务器上已经存在的代码
+
+
+
+需要从管理员那获取地址，从Check Out Project页面，点击Manage按钮，进入到Repository Profiles页面，可以对已经存在的svn地址进行复制、编辑、删除、排序（上移和下移）,如果是检出一份新的代码，肯定是要添加一个新的SVN信息，所以应该选择Add，进入到Add Respository Profile页面，可以根据实际情况来填写自己获得的svn的地址信息，也可以直接点击Enter SVN URL，输入从管理员那获得的SVN仓库的地址，点击ok，会自动的将仓库信息显示在Add Respository Profile页面，点击continue按钮，进入到增加仓库配置的详细页面，包含SVN的验证信息（一般是账号和密码），然后continue，如果有权限可以添加成功，否则添加失败。
+
+仓库信息配置好之后，点击Check Out，选择保存在本地的位置等信息。
+
+2、Update
+
+选择需要更新的文件夹，点击更新即可。---如果更新有冲突怎么办？
+
+3、Commit
+
+需要注意三点，一是新添加的文件需要先点击Add+按钮，将文件先添加到提交列表，然后点击commit；二是注意隐藏文件的提交，比如iOS开发的静态库.a文件的提交，容易被客户端给忽略掉了，可以选择菜单View-ignored Fileds 查看是不是给需要提交的文件给忽略了，如果忽略了，将其选中，选择添加，然后commit；三是注意删除文件，如果在工程中删除了，在客户端中直接选中删除的文件，Remove，然后commit。如果在处理删除文件的时候总是提示“XXXOut of date”，则需要先将改文件夹 Revert，然后update，在执行删除动作。
+
+4、设置代理。在使用局域网开发又需要向公网提交代码，就需要设置代理了。
+
+在菜单Repository的Mange Profiles目录下，可以在Proxies标签下配置代理，可以在Profiles标签下选中某一个仓库地址，点击Edit按钮，设置它是否使用代理，以及使用哪一个代理。
+
+5、遇到文件冲突怎么办？
+
+选中冲突的文件，点击Chanes按钮，然后进入到解决冲突的页面，可以根据实际情况来解决。
+
+6、Annotate的使用
+
+该功能可以看具体某一个文件在第多少个版本上更新了。以及更新了什么内容
+
+7、Log的使用
+
+该功能看某个仓库，在一段时间内，多少人提交了代码以及提交的时间，提交的内容等
+
+8、乱码如何解决
+
+如果你遇到自己提交到svn的汉子是正常的，更新下来的也是正常的，但是在版本之间比对的时候汉子是乱码，就需要设置一下了。在菜单Project--setting和Defualt Setting里面设置字符集为UTF-8格式。即可
+
+9、代码的回滚
+
+如果需要将本地代码回滚到具体的某一个版本，那么有两种方式供您选择，一是重新Check Out一份代码，在Advance里面选择更新到具体一个版本；二是Modify--Recate里面可以进行操作
+
+
+
+10、可以在window菜单下面设置窗口的布局
+
+11、可以在View--TableColumns里面设置某个文件的具体显示信息
+
+12、可以在Project-Project Manger菜单下重命名本地仓库的文件名
+
+13、可以在Edit-Customizer菜单下自定义显示在窗口上的快捷菜单。

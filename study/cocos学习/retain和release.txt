@@ -1,0 +1,306 @@
+笨木头与游戏开发
+只有你足够强，别人才会和你讲道理。
+主页
+Cocos2d-x
+教程导航
+我的游戏
+游戏实例
+八卦一下
+留言吧
+论坛
+【木头Cocos2d-x 037】retain和release倒底怎么玩？
+作者：笨木头   发布：2013-03-18 22:15   分类：Cocos2d-x, Cocos2d-x2.0   阅读：3,586次   23条评论  
+如果文章对您有所帮助，欢迎给作者捐赠，支持笨木头的独立游戏工作，捐赠数额随意，重在心意^_^ + 我要捐赠
+retain和release倒底怎么玩？
+呼呼，好久没有发布教程了（小若：难得清静了，你为毛又出来吓人= =），其实最近木头我在准备出版书籍的事情。但是貌似不太顺利，果然我还是积累不够，写书的过程压力好大，感觉写不出有趣的文字出来（小若：嗷、、、）。果然还是在博客写自由一些？嘿嘿~
+最近以及最不是很近（小若：书里一定不能出现这些错误的语句，所以你才写不出来吧= =），不少朋友对retain的认识似乎有点模糊，今天我就和大家分享一下关于retain的知识吧~
+笨木头花心贡献，啥？花心？不呢，是用心~
+
+转载请注明，原文地址： http://blog.csdn.net/musicvs/article/details/8689345
+正文：
+1. 为什么会有retain？
+C++和Java不一样，Java有一套很方便的垃圾回收机制，当我们不需要使用某个对象时，给它赋予null值即可。而C++new了一个对象之后，不使用的时候通常需要delete掉。
+于是，Cocos2d-x就发明了一套内存管理机制（小若：发你妹纸。。。），其实红孩儿的博客很详细地解释了Cocos2d-x的内存管理机制，我没有能力也不想重复解释。（小若：那你还写？= =）
+Retain的意思是保持引用，也就是说，如果想保持某个对象的引用，避免它被Cocos2d-x释放，那就要调用对象的retain函数。（小若：为什么不retain就会被释放？）
+2. 真正的凶手autoRelease
+既然旁白诚心诚意地问我，那我就光明正大地回答吧（小若：我今天没力气吐槽，好吧= =）。
+一旦调用对象的autoRelease函数，那么这个对象就被Cocos2d-x的内存管理机制给盯上了，如果这个对象没人认领，那就等着被释放吧。（小若：= =太久没吐槽，一时不知道吐什么好）。
+3. 看代码实际点
+说了这么多，还是上代码吧。
+创建一个Cocox2d-x的项目，就直接拿HelloWorldScene开刀，修改init函数，在最后添加一句代码：
+bool HelloWorld::init()
+ {
+ bool bRet = false;
+ do
+ {
+ /* 很多代码被省略了。。。。。。 */
+testSprite = CCSprite::create("HelloWorld.png");
+bRet = true;
+ } while (0);
+return bRet;
+ }
+（小若：testSprite是什么东东？）
+testSprite是一个成员变量，在头文件里加上就可以了：
+class HelloWorld : public cocos2d::CCLayer
+{
+public:
+    virtual bool init();
+    static cocos2d::CCScene* scene();
+    void menuCloseCallback(CCObject* pSender);
+    CREATE_FUNC(HelloWorld);
+private:
+    cocos2d::CCSprite* testSprite;
+};
+然后，最关键的来了，我们修改menuCloseCallback函数：
+void HelloWorld::menuCloseCallback(CCObject* pSender)
+{
+    testSprite->getPosition();
+}
+现在，运行项目，点击按钮，看看是什么情况？
+（小若：报错了！）
+如果大家知道怎么调试项目的话，我们在menuCloseCallback函数里断点，用调试模式运行项目，看看testSprite对象：
+
+（小若：很正常啊，有什么特别的？）
+正你妹纸啊，正！你才正！（小若：不要这么光明正大地赞我O O！）
+我们应该能看到不少非正常数据，图中已经用红色圈圈标出来了，这代表testSprite对象被释放了，现在testSprite指向未知的位置。
+这是很危险的，有时候它不会立即报错，但是在某个时刻突然崩溃！
+要想解决这个问题，很简单，再次修改init函数：
+bool HelloWorld::init()
+{
+    bool bRet = false;
+    do
+    {
+        /* 很多代码被省略了。。。。。。 */
+        testSprite = CCSprite::create("HelloWorld.png");
+testSprite->retain();
+        bRet = true;
+    } while (0);
+    return bRet;
+}
+再次运行项目，看看还会不会报错？（小若：不会了，为什么？）
+再次用调试模式运行项目，看看testSprite对象：
+
+（小若：不正常！都是0！！）
+零你妹纸= =（小若：为什么今天你总是抢我的对白O O！）
+这次我们看到testSprite的数据明显正常了。
+4. 原理来了
+好了，唠叨了一大堆，还没有进入正题。
+首先，要想让对象参与内存管理机制，必须继承CCObject类（CCNode、CCLayer等都继承了CCObject类）。
+然后，调用对象的autoRelease函数，对象就会被Cocos2d-x的内存管理机制盯上，在游戏的每一帧，内存管理机制都会扫描一遍被盯上的对象，一旦发现对象无人认领，就会将对象杀死！（小若：嗷~残忍！）
+如果不想让对象被杀死，那么就要调用对象的retain函数，这样对象就被认领了，一旦对象被认领，就永远不会被内存管理机制杀掉，是永远，一辈子。（小若：好朋友，一辈子= =）
+但，对象一辈子都不被释放的话，那么就会产生内存泄露，你试试加载一个占20M内存的对象一辈子不释放，不折腾死才怪~（小若：你去加载一个20M的对象本身就是闲的那个什么疼啊！）因此，当你不需要再使用这个对象时，就要调用对象的release函数，这是和retain对应的。一般可以在析构函数里调用release函数。
+5. 实际情况
+讲道理，大家都懂，但是，相信很多朋友在实际写代码的时候，还是会感觉很混乱。
+比如，什么时候该retain？大家是不是发现，有时候不retain也不会报错？
+其实这很简单，因为我们经常会在create一个对象之后，添加到层里，如：
+testSprite = CCSprite::create("HelloWorld.png");
+this->addChild(testSprite);
+addChild函数就是导致大家混乱的凶手了，addChild函数会调用对象的retain函数，为什么它要调用对象的retain函数呢？因为你都把对象送给它当孩子了，它当然要认领这个对象了！（小若：我懂了，嗷！）
+于是，当我们把对象addChild到CCLayer时（不一定是CCLayer，CCArray、CCNode都行），我们就不需要调用对象的retain函数了。
+6. 那倒底什么时候要retain？
+说了这么多，还是没有说清楚，什么时候要调用对象的retain。
+很简单，当你把一个对象作为成员变量时，并且没有把对象addChild到另外一个对象时，就需要调用retain函数。
+7. 最后的最后
+一定要记住，必须要调用了对象的autoRelease函数之后，retain和release函数才会生效，否则，一切都是徒劳。
+因此，十分建议使用create的方式创建对象，如：
+CCSprite* CCSprite::create(const char *pszFileName)
+{
+    CCSprite *pobSprite = new CCSprite();
+    if (pobSprite && pobSprite->initWithFile(pszFileName))
+    {
+        pobSprite->autorelease();
+        return pobSprite;
+    }
+    CC_SAFE_DELETE(pobSprite);
+    return NULL;
+}
+这些就是retain表面上的知识了，至于retain源码级别的解说，请到红孩儿的博客吧，强烈推荐~
+好了，不唠叨了~困喇，睡大觉去~~
+0
+你不会希望错过这些：
+《Cocos2d-x3.x游戏开发之旅》即将出版~！
+【木头Cocos2d-x 005】穷鬼之mac cocos2d-x环境搭建-成功！（VMWare + mac lion+xcode）
+你是否有游戏开发经验，学习Cocos2d-x多久？
+【1元开源计划】——Cocos2d-x3.2+Lua《三色地狱》源码
+Cocos2d-x Auto-batching 浅浅的"深入分析"
+《Cocos2d-x3.x游戏开发之旅》已出版~！(附源码下载地址)
+【1元开源计划】Cocos2d-x3.2+Lua 游戏源码公开
+【Cocos2d-x Lua】出乎意料的性能短板——那个getPosition的binding
+无觅关联推荐[?]
+-------------------------------------------------------- End --------------------------------------------------------
+如果文章对您有所帮助，欢迎给作者捐赠，支持笨木头的独立游戏工作，捐赠数额随意，重在心意^_^ + 愿意捐赠$
+---------------------------------------------------------------------------------------------------------------------
+   
+【上一篇】你是否有游戏开发经验，学习Cocos2d-x多久？
+【下一篇】我从CSDN搬到这里了，这是木头的个人博客~
+最新最早最热
+23条评论
+黑桃4
+黑桃4
+木哥，请问 “在游戏的每一帧，内存管理机制都会扫描一遍被盯上的对象。。。。。。。。”中，“游戏的每一帧”是什么意思啊？
+1月15日回复顶转发
+糟糕_树叶的mut
+糟糕_树叶的mut
+可以把游戏想象成一个大的while循环，每一次的循环，就是游戏的一帧。
+游戏里的动作、动画其实都是在这个循环里修改对象的坐标、大小等等来实现的，一帧帧连起来，就成为了会动的游戏。
+1月15日回复顶转发
+firedragonpzy
+firedragonpzy
+是不是图片贴反了 郁闷
+2013年4月23日回复顶转发
+糟糕_树叶的mut
+糟糕_树叶的mut
+[衰哪张图片反了？
+2013年4月23日回复顶转发
+firedragonpzy
+firedragonpzy
+失误 是pop 想成push了 呵呵
+2013年4月24日回复顶转发
+糟糕_树叶的mut
+糟糕_树叶的mut
+[嘻嘻]
+2013年4月24日回复顶转发
+firedragonpzy
+firedragonpzy
+前段时间忙项目，最近刚刚发现你的站 很棒 [给力]
+2013年4月24日回复顶转发
+糟糕_树叶的mut
+糟糕_树叶的mut
+[可怜] 谢谢支持~
+2013年4月24日回复顶转发
+musicvs
+musicvs
+[reply]ppandaren[/reply]
+这个我也没有试过呢。。。
+2013年3月28日回复顶转发
+ppandaren
+ppandaren
+[reply]ppandaren[/reply]
+网上的方法试了也不管用
+2013年3月28日回复顶转发
+ppandaren
+ppandaren
+木头哥，2.0.4，你用是这个版本吧，能不能帮忙试一下如何在win下全屏啊，搞了好多天了
+2013年3月28日回复顶转发
+musicvs
+musicvs
+[reply]rocky1301750[/reply]
+嘻嘻，所以我文章里强烈推荐红孩儿的那篇源码级~
+2013年3月21日回复顶转发
+rocky1301750
+rocky1301750
+[reply]musicvs[/reply]
+还是涉及到介绍源码更清楚啊，呵呵 ，不多说了，还是红孩儿的博客啊
+2013年3月21日回复顶转发
+1 2 3
+社交帐号登录:
+微博
+QQ
+人人
+豆瓣
+更多»
+
+
+发布
+笨木头与游戏开发正在使用多说
+  
+RSS订阅：  RSS订阅
+这货是木头
+
+ 访问我的微博 
+博主：笨木头
+关注：Cocos2d-x
+访问：233506 次
+----------------------------
+木系Cocos2d-x群(满)：107952708
+Cocos2d-x①号小群：369299194
+----------------------------
+Cocos2d-x游戏源码：萌·守护裙子
+Cocos2d-x网游源码：守护裙子OL
+赞助一下，点你喜欢
+
+
+只看感兴趣的
+
+Android (7)
+C++ (13)
+木头与C++ (13)
+Cocos2d-x (110)
+2.0游戏实例《跑跑跑》 (7)
+3.0游戏实例《别救我》 (11)
+Cocos2d-x Lua (37)
+Cocos Code IDE (5)
+Cocos2d-x2.0 (60)
+Cocos2d-x3.0 (15)
+发布 (1)
+收费教程 (6)
+FireFly (3)
+LGame (17)
+其它 (22)
+推广 (3)
+调皮一下 (3)
+创业路 (17)
+资源 (1)
+木头的新书出版喇
+
+ 
+京东购买
+当当网购买
+亚马逊购买
+大家都在讨论
+
+斌哥
+斌哥2小时前
+在 [笨木头管理者之路]No.1 人才难求，只怪自己不是好伯乐。 中评论
+我想问问 网上下载png合成图 有什么方法生成出plist呢[互粉]
+郭檀香
+郭檀香3小时前
+在 【笨木头Lua专栏】基础补充07：协同程序初探 中评论
+有点吊
+☪在星空下❈找你∽·
+☪在星空下❈找你∽·5小时前
+在 木头的第一款Unity3D手游《只有一关》低调发布 中评论
+谢谢木哥
+糟糕_树叶的mut
+糟糕_树叶的mut8小时前
+在 【笨木头C++】基与基础06：为什么创建类的时候要用new？ 中评论
+[呵呵]
+糟糕_树叶的mut
+糟糕_树叶的mut8小时前
+在 随便留言吧 中评论
+正常切换场景没问题，只有这个场景有问题，那就可以确定问题是在TollgateScene。 既然单独加载Layer没问题，那问题应该是出现…
+糟糕_树叶的mut
+糟糕_树叶的mut9小时前
+在 木头的第一款Unity3D手游《只有一关》低调发布 中评论
+谢谢，你说得很对~！ 我这本书也是希望能让读者习惯自己去研究，毕竟授人以鱼不如授人以渔。
+也许你用得上
+
+ WordPress专用主机推荐
+ 
+大家都在关注
+
+随便留言吧
+[笨木头管理者之路]No.1 人才难求，只怪自己不是好伯乐。
+《Cocos2d-x3.x游戏开发之旅》已出版~！(附源码下载地址)
+我是如何成为“大神”的
+木头的第一款Unity3D手游《只有一关》低调发布
+用户登录
+
+用户名：
+密　码：
+ 记住我 
+友情链接(联系musicvs@163.com)
+笨木头CSDN博客  |   火龙社区  |   游戏开发论坛  |   KonanBlog  |   香港独立IP空间  |   GreenVPN(翻墙，木头个人推荐)  |   蜉蝣极客  |   Cocos2d-x+lua开源游戏源码
+
+Cocos2d-x 游戏源码    |   向木头提问    |   站点地图    |   邮件：musicvs@163.com
+Copyright © 2013-2014 笨木头与游戏开发 Powered by WordPress
+无觅相关文章插件，快速提升流量
+
+Cocos2d-x3.0游戏实例之《别救我》第八篇——TiledMap实现关卡编辑器
+
+博客推广之Cocos2d-x战争迷雾效果源码
+
+Cocos2d-x3.0 加载Cocostudio的UI后，按钮无法点击的解决方法
+
+【木头Cocos2d-x 006】HelloLua简单分析
+无觅关联推荐[?]

@@ -1,0 +1,8 @@
+
+python多版本管理安装：
+	**1 IDE使用的版本是3.x，在IDE里安装
+ 	**2 pip3 install Pillow会安装到/System/Library/Frameworks/Python.framework/			Versions/3.x/lib/python3.x/site_backpacks目录下
+	pip3 -V 查看pip3.x版本路径
+
+	**3 源码安装cd Imaging-1.1.7目录
+	python setup.py install 

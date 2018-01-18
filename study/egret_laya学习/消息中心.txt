@@ -1,0 +1,8 @@
+A类监听
+App.MessageCenter.addListener(EventConst.STAFF_LIST_DATA_REFLUSH,this.listFlush,this);
+
+
+B类触发
+App.MessageCenter.dispatch(EventConst.STAFF_LIST_DATA_REFLUSH,{ _key: KEY,_data: data });
+删除通知
+App.MessageCenter.removeListener(EventConst.STAFF_LIST_DATA_APPRAISAL,this.listFlush,this);

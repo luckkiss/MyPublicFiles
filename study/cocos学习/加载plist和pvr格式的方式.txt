@@ -1,0 +1,55 @@
+#include "SpriteTestLayer.h"
+
+SpriteTestLayer::SpriteTestLayer(void)
+{
+}
+bool SpriteTestLayer::init()
+{
+CCSize s=CCDirector::sharedDirector()->getWinSize();
+
+//第一种加载资源方式
+//CCSprite* sprite=CCSprite::create("start.png");
+//第二种加载资源方式
+CCSpriteFrameCache *cache=CCSpriteFrameCache::sharedSpriteFrameCache();
+cache->addSpriteFramesWithFile("image.plist","image.png");
+CCTexture2D *texture = CCTextureCache::sharedTextureCache()->textureForKey("image.png"); 
+    CCSpriteBatchNode *spriteBatch = CCSpriteBatchNode::batchNodeWithTexture(texture); 
+    addChild(spriteBatch); 
+CCSprite* sprite=CCSprite::spriteWithSpriteFrameName("start.png");
+/*
+  加载pvr压缩格式文件方式：注意此种方法不可以像上面打成一个文件，然后根据名字来索引对应的图片
+  如果在AndEngine中使用，然后利用TexturePacker是可以导出三个文件格式的，就是多出来了一个xml文件
+  保存着索引子图片的索引，已经图片位置等信息，cocos2dx的test也没有找到相应的例子，只有单独一个
+  精灵才用到了加载pvr这种格式，可能cocos2dx却没有导出这个xml,也可能是这个原因吧！
+  
+  //第一种方式:
+  CCSprite* sprite=CCSprite::create("image.pvr.ccz");
+  //第二种方式：
+  CCTexture2D *texture;
+  CCTextureCache *cache=CCTextureCache::sharedTextureCache();
+  texture=cache->addImage("image.pvr.ccz");
+  CCSprite* sprite=CCSprite::create(texture);*/
+sprite->setAnchorPoint(ccp(0,1));//设置sprite的描点,(0,1)也就是图片的左上角
+sprite->setPosition(ccp(0,s.height));//设置sprite位置
+this->addChild(sprite);
+//sprite的一些基本的操作:缩放、旋转、混色
+m_tamara=CCSprite::spriteWithSpriteFrameName("grossini.png");
+m_tamara->setScaleX( 2.5f);
+    m_tamara->setScaleY( -1.0f);
+    m_tamara->setPosition(ccp(100,70) );
+    m_tamara->setOpacity( 255);//RGBA值RGB+透明度值
+this->addChild(m_tamara);
+m_grossini=CCSprite::spriteWithSpriteFrameName("grossinis_sister1.png");
+    m_grossini->setRotation( 120);
+    m_grossini->setPosition( ccp(s.width/2, s.height/2));
+    m_grossini->setColor( ccc3( 255,0,0));
+this->addChild(m_grossini);
+m_kathia=CCSprite::spriteWithSpriteFrameName("grossinis_sister2.png");
+    m_kathia->setPosition( ccp(s.width-100, s.height/2));
+    m_kathia->setColor( ccBLUE);
+this->addChild(m_kathia);
+return true;
+}
+SpriteTestLayer::~SpriteTestLayer(void)
+{
+}

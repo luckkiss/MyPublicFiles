@@ -1,0 +1,8 @@
+Size winsize = Director::getInstance()->getWinSize();
+    Node* node = CSLoader::createNode("MainScene.csb");
+    node->setScale(1.3);
+    //node->setPosition(node)
+    this->addChild(node);
+//    auto action = CSLoader::createTimeline("res/MainScene.csb");
+//    node->runAction(action);
+//    action->gotoFrameAndPlay(0,true);

@@ -1,0 +1,735 @@
+退出kaiyuzhong
+Cocos开发者平台
+English | 日本語
+Cocos2d-x中文站
+首页
+文档
+教程
+资源
+下载
+社区
+首页>教程 >Cocos2d-x >Cocos2d-x开发基础知识汇总
+Cocos2d-x开发基础知识汇总
+《Cocos2d-x开发基础知识汇总》
+作者：孙达博客
+本文总结Cocos2d-x 3.x版本中22种常用动作类，包括每个类的作用、使用方法以及所实现的效果。
+该系列其他文章
+Cocos2d-x 3.0实现地图的无限滚动
+Cocos2d-x 3.0中使用瓦片地图中的对象层
+Cocos2d-x 3.0中实现多点触摸
+Cocos2d-x 3.0 中使用单点触摸
+搭建Windows下的Android开发环境（新手必看）
+相关文章
+Quick-cocos2d-x v3.3 SocketTCP链接
+Cocos2d-x 封神榜全套源码和资源
+Cocos2d-x高仿dots休闲手游
+Quick-cocos2d-x-3.2中示例Coinfilp解析（五）
+【原创教程】Quick-cocos2d-x实现三消游戏（二）
+
+Cocos2d-x 3.x中43种常用动作汇总
+孙达博客2014-11-21 16:09:315181 次阅读
+本文总结Cocos2d-x 3.x版本中43种常用动作类，包括每个类的作用、使用方法以及所实现的效果。
+
+
+
+ScaleBy 
+
+作用: 创建一个缩放的动作  
+
+参数1：达到缩放大小的所需时间
+
+参数2：缩放比例  
+
+1
+2
+3
+ActionInterval * scaleby = ScaleBy::create(2, 2);  
+ActionInterval * actionbyback = scaleby->reverse();  
+sp->runAction(actionbyback);
+
+
+RotateTo 
+
+作用：创建一个旋转的动作  
+
+参数1：旋转的时间
+
+参数2：旋转饿角度  0 - 360  
+
+1
+2
+ActionInterval * rotateto = RotateTo::create(2, 90);  
+sp->runAction(rotateto);
+     
+
+SkewTo 
+
+作用：创建一个倾斜的动作  
+
+参数1：倾斜到特定角度所需的时间  
+
+参数2：x轴的倾斜角度  
+
+参数3：y轴的倾斜角度  
+
+1
+2
+ActionInterval * skewto = SkewTo::create(2, 10, 10);  
+sp->runAction(skewto);
+
+
+JumpTo  
+
+作用：创建一个跳的动作  
+
+参数1：跳到目标动作位子的所需时间  
+
+参数2：目标位置  
+
+参数3：跳的高度  
+
+参数4：跳到目标位置的次数  
+
+1
+2
+ActionInterval* jumpto = JumpTo ::create(2, ccp(300, 200), 50, 4 );  
+   sp->runAction(jumpto);
+
+
+JumpBy  
+
+作用：创建一个跳的动作  
+
+参数1：跳到目标动作位子的所需时间  
+
+参数2：目标位置  
+
+参数3：跳的高度  
+
+参数4：跳到目标位置的次数  
+
+这个支持方向动作reverse  
+
+1
+2
+3
+ActionInterval * jumpby = JumpBy ::create(3, ccp(300, 200), 50, 4);  
+ActionInterval * ac= jumpby->reverse();  
+sp->runAction(ac);
+
+
+Bezier  
+
+ccBezierConfig结构体      
+
+1
+2
+3
+4
+ccBezierConfig bezierCon;  
+bezierCon.controlPoint_1=PointMake(200, 150);//控制点1  
+bezierCon.controlPoint_2=PointMake(200, 160);//控制点2  
+bezierCon.endPosition =PointMake(340, 100);// 结束位置
+BezierTo  
+
+创建一个贝塞尔曲线运动的动作  
+
+参数1：贝塞尔曲线运动的时间  
+
+参数2 ：ccBezierConfig结构体     
+
+1
+2
+3
+4
+ActionInterval * action = BezierTo::create(2, bezierCon);  
+ActionInterval * action = BezierBy::create(3, bezierCon);//支持反向  
+ActionInterval * action1 = action->reverse();  
+sp->runAction(action1);
+
+
+FadeIn  
+
+作用：创建一个渐变出现的动作  
+
+参数是时间  
+
+1
+2
+ActionInterval * fadein = FadeIn::create(2);  
+sp->runAction(fadein);
+
+
+FadeOut  
+
+作用：创建一个渐变消失的动作  
+
+参数是时间  
+
+1
+2
+ActionInterval * fadeout = FadeOut::create(2);  
+sp->runAction(fadeout);
+
+
+TintTo  
+
+作用：创建一个色彩变化的消失动作  
+
+参数1：色彩变化的动作  
+
+参数2 ：红色分量  
+
+参数3：蓝色分量  
+
+1
+2
+ActionInterval * tinto = TintTo ::create(3, 255, 255, 0);  
+sp->runAction(tinto);
+
+
+TintBy  
+
+作用：创建一个色彩变化的出现动作  
+
+参数1：色彩变化的动作  
+
+参数2：红色分量   
+
+参数3：蓝色分量，但是加了reverse就是反向的  
+
+1
+2
+3
+ActionInterval * tintby = TintBy::create(3, 0, 255, 255);  
+ActionInterval * tintby1 = tintby->reverse();  
+sp->runAction(tintby1);
+
+
+Blink  
+
+作用:创建一额闪烁的动作  
+
+参数1：闪烁完成的时间  
+
+参数2:闪烁的次数  
+
+1
+2
+ActionInterval * blink = Blink ::create(3, 10);  
+sp->runAction(blink);
+
+
+DelayTime  
+
+作用：创建一个延迟的动作  
+
+参数：延迟的时间  
+
+1
+2
+ActionInterval * delaytime = DelayTime::create(3);  
+sp->runAction(delaytime);
+
+
+OrbitCamera  
+
+作用：创建一个球面坐标轨迹进行旋转的动作  
+
+参数1： 旋转轨迹的时间  
+
+参数2：起始半径  
+
+参数3：半径差  
+
+参数4：起始z角  
+
+参数5：旋转z角的差  
+
+参数6：起始x角  
+
+参数7：旋转x角的差  
+
+1
+2
+ActionInterval * orbitcamera = OrbitCamera::create(3, 10, 0, 45, 180, 90, 0);  
+sp->runAction(orbitcamera);
+
+
+CardinalSpline  
+
+作用：创建数组  点的数组  
+
+1
+2
+3
+4
+5
+6
+PointArray * array = PointArray::create(20);
+array->addControlPoint(ccp(0, 0));
+array->addControlPoint(ccp(210, 0));
+array->addControlPoint(ccp(210, 240));
+array->addControlPoint(ccp(0, 160));
+array->addControlPoint(ccp(0, 0));
+
+
+CardinalSplineTo  
+
+作用：创建一个样条曲线轨迹的动作  
+
+参数1：完成轨迹所需的时间  
+
+参数2：控制点的坐标数组  
+
+拟合度：其值=0，路径最柔和  
+
+1
+2
+ActionInterval  * CardinalSplineTo=CardinalSplineTo::create(3, array, 0);  
+sp->runAction(CardinalSplineTo);
+
+
+CardinalSplineBy  
+
+作用：创建一个样条曲线轨迹的动作  
+
+参数1：完成轨迹所需的时间  
+
+参数2：控制点的坐标数组  
+
+拟合度： 其值= 0 路径最柔和  
+
+1
+2
+ActionInterval * CardinalSplineBy = CardinalSplineBy::create(3, array, 0);  
+sp->runAction(CardinalSplineBy);
+
+
+CatmullRomTo、CatmullRomBY  
+
+作用：创建一个样条插值轨迹  
+
+参数1：完成轨迹的时间  
+
+参数2：控制点的数组坐标  
+
+1
+2
+ActionInterval * catmullRomTo = CatmullRomTo::create(3, array);  
+sp->runAction(catmullRomTo);
+   
+
+Follow  
+
+作用：创建一个跟随动作  
+
+参数1：跟随的目标对象  
+
+跟随范围，离开范围就不再跟随  
+
+创建一个参照物spT  
+
+1
+2
+3
+4
+5
+6
+7
+Sprite * spt = Sprite::create("Icon.png");  
+spt->setPosition(ccp(420,40));  
+addChild(spt);  
+sp->runAction(MoveTo::create(3, ccp(940,sp->getPositionY())));  
+      
+Follow * follow = Follow::create(sp,RectMake(0, 0, 960, 320));  
+this-> runAction(follow);
+
+
+EaseBounceIn  
+
+目标动作  
+
+1
+ActionInterval* move = MoveTo::create(3, ccp(300, sp->getPositionY()));
+让目标动作缓慢开始  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * EaseBounceIn = EaseBounceIn::create(move);  
+sp->runAction(EaseBounceIn);
+
+
+EaseBounceOut  
+
+作用：让目标动作赋予反弹力，且以目标动作结束位子开始反弹  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeBounceOut = EaseBounceOut ::create(move);  
+sp->runAction(easeBounceOut);
+
+
+EaseBounceInOut  
+
+作用：让目标动作赋予反弹力，且以目标动作起始与结束位子开始反弹  
+
+1
+2
+ActionInterval * easeBounceInOut= EaseBounceInOut::create(move);  
+sp->runAction(easeBounceInOut);
+
+
+EaseBackIn  
+
+作用：让目标动作赋予回力，且以目标动作起点位置作为回力点  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeBackIn = EaseBackIn::create(move);  
+sp->runAction(easeBackIn);
+
+
+EaseBackOut  
+
+作用：让目标动作赋予回力，且以目标动作终点位置作为回力点  
+
+参数：目标动作  
+
+1
+2
+ActionInterval *easeBackOut = EaseBackOut::create(move);  
+sp->runAction(easeBackOut);
+
+
+EaseBackInOut  
+
+作用：让目标动作赋予回力， 且以目标动作起点和终点位置作为回力点  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeBackInOut = EaseBackInOut::create(move);  
+sp->runAction(easeBackInOut);
+
+
+EaseElasticIn  
+
+作用：让目标动作赋予弹性 ，且以目标动作起点位子赋予弹性  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeElasticIn= EaseElasticIn::create(move);  
+sp->runAction(easeElasticIn);
+
+
+EaseElasticOut  
+
+作用：让目标动作赋予弹性 ，且以目标动作终点位子赋予弹性  
+
+参数：目标动作  
+
+1
+2
+ActionInterval *easeElasticOut = EaseElasticOut::create(move);  
+sp->runAction(easeElasticOut);
+
+
+EaseElasticInOut  
+
+作用：让目标动作赋予弹性 ，且以目标动作起点和终点位子赋予弹性  
+
+参数：目标动作  
+
+   ActionInterval *easeElasticInOut = EaseElasticOut::create(move);  
+
+   sp->runAction(easeElasticInOut);  
+
+
+
+EaseExponentialIn  
+
+作用：让目标动作缓慢开始  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeExponentialIn= EaseExponentialIn::create(move);  
+sp->runAction(easeExponentialIn);
+
+
+EaseExponentialOut  
+
+作用：让目标动作缓慢中止  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeExponentialIn= EaseExponentialOut::create(move);  
+sp->runAction(easeExponentialIn);
+
+
+EaseExponentialInOut  
+
+作用：让目标动作缓慢开始和中止  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeExponentialInOut= EaseExponentialInOut::create(move);  
+sp->runAction(easeExponentialInOut);
+
+
+EaseRateAction  
+
+作用：让目标动作设置速率  
+
+参数1:目标动作  
+
+参数2：速率  
+
+1
+2
+3
+ActionInterval * move = MoveTo::create(5, ccp(300,sp->getPositionY()));  
+ActionInterval * easeRateAction = EaseRateAction::create(move, 3);  
+sp->runAction(easeRateAction);
+
+
+EaseSineIn  
+
+作用：动作由慢到快  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeSineIn = EaseSineIn::create(move);  
+sp->runAction(easeSineIn);
+
+
+EaseSineOut  
+
+作用：动作由快到慢  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeSineOut = EaseSineOut::create(move);  
+sp->runAction(easeSineOut);
+
+
+EaseSineInOut  
+
+作用：动作由慢到快再快到慢  
+
+参数：目标动作  
+
+1
+2
+ActionInterval * easeSineInOut = EaseSineInOut::create(move);  
+sp->runAction(easeSineInOut);
+
+
+Speed  
+
+作用：让目标动作运行速度加倍  
+
+参数1：目标动作  
+
+参数2:倍速  
+
+1
+2
+3
+ActionInterval * move = MoveTo::create(10, ccp(300,sp->getPositionY()));  
+Speed * speed =Speed::create(move, 100);  
+sp->runAction(speed);
+
+
+Spawn  
+
+作用：让多个动作同时执行  
+
+参数：目标动作的可变参数  
+
+1
+2
+3
+4
+5
+ActionInterval * move = MoveTo::create(10, ccp(300,sp->getPositionY()));  
+ActionInterval * scale = ScaleTo::create(2, 3);  
+ActionInterval * rotate = RotateTo::create(4, 190);  
+FiniteTimeAction * spawn =Spawn::create(move,scale,rotate,NULL);  
+sp->runAction(spawn);
+
+
+Sequence  
+
+作用：让多个动作按照前后顺序逐一执行  
+
+参数：目标动作的可变参数  
+
+1
+2
+3
+4
+ActionInterval * move = MoveTo::create(2, ccp(300, sp->getPositionY()));  
+ActionInterval * scale = ScaleTo::create(2, 3);  
+FiniteTimeAction * seq= Sequence::create(move,scale,NULL);  
+sp->runAction(seq);
+扩展如果要对目标动作全部进行方向运动，可以使用如下形式操作  
+
+1
+2
+FiniteTimeAction *seq=Sequence::create(moveby,scaleby,...NULL);  
+FiniteTimeAction * reverseseq = Sequence::create(seq,seq->reverse(),NULL)
+注意Sequence中的所有动作都必须支持reverse函数，否则会出现异常  
+
+1
+2
+3
+4
+5
+ActionInterval * move = MoveBy::create(2, ccp(300, sp->getPositionY()));  
+ActionInterval * scale = ScaleBy::create(2, 3);  
+FiniteTimeAction * seq= Sequence::create(move,scale,NULL);  
+FiniteTimeAction * reveseseq = Sequence::create(seq,seq->reverse(),NULL);  
+sp->runAction(reveseseq);
+
+
+Repeat  
+
+作用：对目标动作进行重复运动（目标动作可以是Sequence ，Spawn）  
+
+参数1：目标动作  
+
+参数2：重复次数  
+
+1
+2
+3
+4
+5
+ActionInterval * move = MoveTo::create(2, ccp(300, sp->getPositionY()));  
+ActionInterval * move2 = MoveTo::create(2, ccp(100,100));  
+FiniteTimeAction*seq =Sequence::create(move,move2,NULL);  
+FiniteTimeAction *repeat = Repeat::create(seq, 3);  
+sp->runAction(repeat);
+
+
+RepeatForever  
+
+作用：对目标动作进行永久性的重复运动（目标动作可以是Sequence ，Spawn）  
+
+参数：目标动作  
+
+1
+2
+3
+4
+5
+ActionInterval * move = MoveTo::create(1, ccp(300, sp->getPositionY()));  
+ActionInterval * move1 = MoveTo::create(1, ccp(100,100));  
+FiniteTimeAction* seq = Sequence::create(move,move1,NULL);  
+ActionInterval * repeatForever =RepeatForever::create((ActionInterval* )seq);  
+sp->runAction(repeatForever);
+
+
+CallFunc  
+
+作用：创建一个回调动作（调用不带参数的回调方法）；  
+
+参数1：目标动作  
+
+参数2：目标回调函数  
+
+1
+2
+3
+4
+ActionInterval * move = MoveTo::create(1, ccp(300, sp->getPositionY()));  
+CallFunc * funcall= CallFunc::create(this, callfunc_selector(HelloWorld::callbackC));  
+FiniteTimeAction * seq = Sequence::create(move,funcall,NULL);  
+sp->runAction(seq);
+
+
+CallFuncN  
+
+作用：创建一个回调动作（调用带一个参数的回调方法）；  
+
+参数1：目标动作  
+
+参数2：目标回调函数  
+
+   ActionInterval * move = MoveTo::create(1, ccp(300, sp->getPositionY()));  
+
+   CallFuncN * funcall= CallFuncN::create(this, callfuncN_selector(HelloWorld::callbackN));  
+
+   FiniteTimeAction * seq = Sequence::create(move,funcall,NULL);  
+
+   sp->runAction(seq);  
+
+
+
+CallFuncND  
+
+作用：创建一个回调动作（调用 带两个参数的回调方法）；  
+
+参数1：目标动作  
+
+参数2：目标回调函数  
+
+1
+2
+3
+4
+5
+ActionInterval * move = MoveTo::create(1, ccp(300, sp->getPositionY()));
+CallFuncND * funcall = CallFuncND::create(this, callfuncND_selector(HelloWorld::callbackND), (void*)0xbebabeba);
+FiniteTimeAction * seq = Sequence::create(move, funcall, NULL);
+sp->runAction(seq);
+return true;
+
+
+Cocos引擎中文官网现面向广大Cocos引擎相关开发者征集优秀教程，欢迎大家投稿！来稿请发送至：support@cocos.org。
+
+
+
+
+
+来源网址：http://www.sundaboke.com/?post=34
+
+分享到：赞(2)
+文章评论 (2)
+
+cocos2dxxiaoyu2014-11-26 23:12:30
+//通过对象的表态方法create创建对象实例；其中 //第一参数为渐变时间，第二个参数为RGB中的Ｒ值，第三个参数为RGB中的G值，第四个参数为RGB中的B值 CCActionInterval* action1 = CCTintTo::create(2, 255, 0, 255); CCActionInterval* action2 = CCTintBy::create(2, -127, -255, -127); CCActionInterval* action2Back = action2->reverse(); m_tamara->runAction( action1); m_kathia->runAction( CCSequence::create( action2, action2Back, NULL)); 这才是正确的，你这是误人子弟啊 第一个参数：是调用对象 哈哈哈哈哈哈哈哈
+支持(0)回复(0)
+
+cocos2dxxiaoyu2014-11-26 23:10:24
+TintTo 作用：创建一个色彩变化的消失动作 参数1：色彩变化的动作 不是 1.时间 2.3.4 RGB 红蓝绿吗？ 参数2 ：红色分量 参数3：蓝色分量 1 2 ActionInterval * tinto = TintTo ::create(3, 255, 255, 0); sp->runAction(tinto);
+支持(0)回复(0)
+
+发表评论
+Cocos 引擎|客服邮箱：support@cocos.org
+
+京公网安备 11010502011183    京ICP备 11006519号   京ICP证 100954号
+Copyright © 2012-2015 cocos.org
+官方微博
+weixin
+客服邮箱

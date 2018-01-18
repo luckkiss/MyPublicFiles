@@ -1,0 +1,24 @@
+
+transform => 脚本依附的物体
+
+var speed : int =5;
+//Input.GetAxis("Horizontal”)点击左右或ad键返回1或-1 | Time.deltaTime一帧的时间
+var x = Input.GetAxis("Horizontal")*Time.deltaTime*speed;//左右键
+var z = Input.GetAxis("Vertical")*Time.deltaTime*speed;//上下键
+transform.Translate(x,0,z);//移动物体
+print(x);
+
+//点击鼠标左键或control键返回1或-1
+if(Input.GetButtonDown("Fire1"))
+{
+var n:Transform = Instantiate(zidan,transform.position,transform.rotation);//实例化对象
+var fwd : Vector3 = transform.TransformDirection(Vector3.forward);//换取物体的方向
+n.GetComponent.<Rigidbody>().AddForce(fwd*28000);//加力
+}
+Destroy(gameObject,3.0);//3s后销毁物体
+
+Input.GetKey(KeyCode.Q) //按键盘的Q键返回1
+transform.Rotate(0,25*Time.deltaTime,0,Space.Self);//以自身中心点为锚点,以x，y，z轴为中心线进行旋转，x轴有值向上下旋转，y轴有值向左右旋转
+
+
+

@@ -1,0 +1,55 @@
+先进入 cocos 文件夹
+进入bin
+进入/Users/y/Desktop/cocos2d-x-3.4/tools/cocos2d-console/bin
+./cocos
+./cocos new test1 -p com.your_company.mygame -l cpp -d /Users/y/Desktop/Cocos_Proj
+
+cd /Users/colin/Desktop/cocos2d-x-3.8.1/tools/cocos2d-console/bin
+./cocos new test4 -p com.zhangtongwireless -l js -d /Users/y/Desktop/Cocos_Proj
+
+
+visualgo 重要的学习地址
+
+js项目
+/Users/colin/Desktop/cocos2d-x-3/setup.py 
+source /Users/colin/.zshrc
+cocos new hello -l js
+cocos run -p web
+
+h)    例如，我想在桌面创建一个叫HelloWord 的项目。那么有两种做法。
+
+i.    第一种：
+1.    cd ./Desktop
+2.    cocos new HelloWord –l js 
+ii.    第二种： cocos new HelloWord -l js -d ./Desktop
+
+4. 运行项目
+浏览器上：
+cd ./Desktop/HelloWord
+cocos run -p web
+
+
+编译并运行Cocos2d-x JSB项目在iOS，android，mac上(即：native平台上)
+cd ./Desktop/HelloWord
+cocos compile -p ios|android|mac
+cocos run -p ios|android|mac
+
+导入 HelloWord/frameworks/runtime-src/proj.android 到 Eclipse, 这个时候，Eclipse会报错，完成下面一步就好了。
+
+导入 HelloWord/frameworks/js-bindings/cocos2d-x/cocos/platform/android/java 到 Eclipse 中即可
+
+cd ./Desktop/HelloWord
+cocos compile –p web| android|IOS –m release
+命令运行成功之后，在HelloWord工程文件夹下多出了一个publish文件夹，这个就是发布包。
+
+例如我想把HelloWord跑在微信上，那三个步骤搞定：
+cd ./Desktop/HelloWord
+cocos compile –p web –m release
+拷贝HelloWord/publish/html5到你的服务器下，然后微信浏览器访问这个地址，就搞定了。PC浏览器也是一样一样滴。 
+
+例如我想把HelloWord跑在微信上，那三个步骤搞定：
+cd ./Desktop/HelloWord
+cocos compile –p web –m release
+
+
+

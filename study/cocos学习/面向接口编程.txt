@@ -1,0 +1,400 @@
+关闭
+
+登录 | 注册
+笨木头
+只有你足够强，别人才会和你讲道理。
+目录视图摘要视图订阅
+Markdown那么好，还不来试试     扒一扒你遇到过最NB开发项目     5月问答又送C币咯！     Hadoop实战高手速成宝典    
+ 【木头Cocos2d-x 018】面向接口编程01: 向她表白之实现函数回调
+分类： 笨木头 Cocos2D-x 2012-12-05 17:27 3651人阅读 评论(15) 收藏 举报
+cocos2d-xCocos2d-x回调她游戏表白
+【在Cocos2d-x中面向接口编程01】向她表白之实现函数回调
+首先，我要郑重地声明一件事情：我现在很尿急，但是厕所有人~！
+嗯，然后，我本来是一名Java程序员，由于Cocos2d-x太吸引人，我就硬着头皮学，可是C++和Java那看似差不多，实际又确实差很多的纠结，让我变得...很尿急~！
+（旁白：可以少说一些废话么？）
+ 
+最近我在试着写一个小游戏，叫做《粒子格斗》。
+（旁白：你已经说过了。。。）
+ 
+然后，我自己写了一个消息派发的功能，因为当时我并不知道Cocos2d-x已经集成了这个功能。我写Java习惯了，所以我按照Java的思维习惯实现了这个消息派发。如果对消息派发不熟悉或者完全不懂的朋友，那个，还是百度一下会好一些~
+（旁白：等等~！你不是应该介绍实现函数回调吗？）
+ 
+ 
+哦，对，我应该介绍实现函数回调的，但是如果你和我一样，是Java出身的，并且Java功底也不是很深厚，对于掌握新语言不太迅速的话，那么，请继续往下看。
+如果你对C++已经是比较熟悉了，那，可以忽略这篇文章。
+ 
+ 
+笨木头花心贡献，啥？花心？不呢，是用心~
+
+转载请注明，原文地址：  http://blog.csdn.net/musicvs/article/details/8261147
+ 
+正文：
+ 
+1. 从Java移植过来的消息派发
+按照Java的思路，实现如下：
+a. 首先要实现消息派发的核心类，用于订阅、删除以及发布消息，这个类只需用实现3个函数：
+[cpp] view plaincopyprint?
+/* 订阅消息 */  
+addListener(I_MessageDispath msgListener,  const char* sMsgType);  
+  
+/* 删除订阅的消息 */  
+delListener(I_MessageDispath msgListener,  const char* sMsgType);  
+  
+/* 发布消息 */  
+dispatchMsg(const char* sMsgType, CCObject* pData);  
+
+ 
+b. 然后就要实现一个接口，一个代表消息订阅者的接口（这很美妙，我太喜欢接口了，它让我的代码之间的耦合度减小了很多很多~！），我们命名为 I_MessageDispatch。
+[cpp] view plaincopyprint?
+class I_MessageDispatch : public CCObject {  
+public:      
+    void onRecv(CCObject* pData);  
+};  
+
+ 
+c. 详细的就不多解释了，我们再用一个CCDictionary保存不同类型的订阅者对象，比较完整的头文件内容如下：
+[cpp] view plaincopyprint?
+class MessageDispatch : public CCObject {  
+public:  
+    static MessageDispatch* sharedMessageDispatch();  
+  
+    /* 订阅消息 */  
+    addListener(I_MessageDispath msgListener,  const char* sMsgType);  
+  
+    /* 删除订阅的消息 */  
+    delListener(I_MessageDispath msgListener,  const char* sMsgType);  
+  
+    /* 发布消息 */  
+    dispatchMsg(const char* sMsgType, CCObject* pData);  
+  
+private:  
+    /* CCDictionary<CCArray<I_MessageDispatch*>, const char*> */  
+    CCDictionary* mListenerDict;  
+};  
+
+ 
+d. 然后就是一些细节的处理，好，不多说。就是字典里保存了消息类型和消息订阅者列表的对应关系。添加订阅的时候，就把实现了I_MessageDispatch接口的对象添加到对应的列表里（删除同理），然后发布消息的时候，取出要发布的消息类型对应的订阅者列表，对列表中的每个对象都调用一次onRecv函数，就可以了。
+（旁白：你不是说不多说么？= = 我感觉你说了很多）
+ 
+ 
+2. 看起来它工作得很好
+看起来，这个消息派发类工作得不错，所有功能都能正常运行。可是，问题来了。
+C++中是没有接口的说法的，它只有多继承，我太怕多继承了，我可给它整晕了好多次。首先它有一个弱点，二义性，额，我就不解释了，专业解释请百度一下（旁白：你压根儿就解释不了吧...）。比如我有这样一个类：
+[cpp] view plaincopyprint?
+class ClientFight : public CCLayer {  
+public:  
+    bool initWithLayer(CCLayer* mLayer);  
+    static ClientFight* createWithScene(CCLayer* mLayer);  
+#endif  
+ 
+嗯，看起来没有什么问题，但是，如果我这个类想订阅消息，怎么办？很简单啊，让它继承I_Messagedispatch接口，然后实现onRecv函数，然后订阅消息，就OK了，这是我在写Java时最容易想到的方法。
+[cpp] view plaincopyprint?
+class ClientFight : public CCLayer, public I_MessageDispatch {  
+public:  
+    bool initWithLayer(CCLayer* mLayer);  
+　　static ClientFight* createWithScene(CCLayer* mLayer);  
+  
+    virtual void onRecv(CCObject* pData);  
+#endif  
+
+ 
+3. 二义性，烦死你
+来看看这样一个情景，某个类创建了ClientFight对象，并且保持了它的引用，当我要释放引用的时候，很自然要调用release函数。于是，编译器会告诉你，ClientFight的release函数调用不明确。
+原因呢？ClientFight继承了CCLayer, CCLayer继承了CCObject，I_MessageDispatch也继承了CCObject。
+于是，它们两个都有release函数，而ClientFight作为它们的子类，不知道该继承谁的release才好，所以编译器晕了，我也晕了。
+要解决这个问题很简单，本来是这样调用的：mClientFight->release();  
+现在改为：mClientFight->CCLayer::release();
+OK,这样编译器就不会晕了。但我还是晕啊，这太麻烦了~！这只是其中一个小问题，以后还会遇到更多问题，对于Java出身的人来说，我暂时无法接受这么麻烦的编码。
+ 
+4. 发现使用接口的新方式
+我写的那个消息派发还不止这点故障，还有更多的故障，我就不说了。
+偶然的机会，我百度了一下：Cocos2d-x 观察者。
+然后被我发现了子龙山人的博客，他介绍了Cocos2d-x的观察者模式，正好就是说的消息派发，木了个头的，原来已经有这个功能了，我还干嘛写得这么辛苦？
+（旁白：你废话多，所以总是干些多余的事情= =）
+这个消息派发的功能大家可以看看这个类：CCNotificationCenter。
+或者看看大牛的博客：
+http://www.zilongshanren.com/cocos2d-x-design-pattern-6-observer/
+http://www.xinze.me/cocos2d-x-ccnotificationcenter/
+我稍微拜读了一下Cocos2d-x的源码，发了一个很奇妙的地方，是一种“另类”的接口使用方式。
+CCNotificationCenter在添加订阅者的时候，不需要订阅者实现某个接口，直接添加就可以了。
+CCNotificationCenter会自动新建一个对象，这个对象是CCNotificationObserver，其实这就可以当做是一个接口，只不过订阅者不是实现这个接口，而是直接绑定到这个接口身上。按照我朋友的一个说法，这有点像适配器模式，也许就是适配器模式。
+[cpp] view plaincopyprint?
+void CCNotificationCenter::addObserver(CCObject *target,   
+                                       SEL_CallFuncO selector,  
+                                       const char *name,  
+                                       CCObject *obj)  
+{  
+    if (this->observerExisted(target, name))  
+        return;  
+      
+    CCNotificationObserver *observer = new CCNotificationObserver(target, selector, name, obj);  
+    if (!observer)  
+        return;  
+      
+    observer->autorelease();  
+    m_observers->addObject(observer);  
+}  
+
+ 
+怎么样？这样我们就可以避免一个对象为了订阅消息而不得不使用多继承了~
+ 
+5. 实例：向她表白
+我们先来练练手，熟悉一下C++的函数参数的传递，再次声明，已经熟悉C++的朋友，直接忽略我。
+（旁白：我们早就忽略你了。。。）
+ 
+我们来实现一个经典的事情：我不敢向喜欢的女生表达，所以我想让我的朋友帮我这个忙。
+这个类很简单：
+[cpp] view plaincopyprint?
+#ifndef __TELL_LIKE_HER_H__  
+#define __TELL_LIKE_HER_H__  
+  
+#include "cocos2d.h"  
+  
+USING_NS_CC;  
+  
+typedef void (CCObject::*SEL_CallFuncL) (CCObject*);  
+#define callfuncL_selector(_SELECTOR) (SEL_CallFuncL)(&_SELECTOR)  
+  
+/* 这是一个不太像接口的接口 */  
+class I_LikeHer : public CCObject {  
+public:  
+    I_LikeHer(CCObject* targer, SEL_CallFuncL selector);  
+  
+    void performSelector();  
+  
+private:  
+    SEL_CallFuncL mSelector;  
+    CCObject* mTargert;  
+};  
+  
+/* 这是我的朋友，他会帮我表达我的心意 */  
+class TellLikeHer : public CCObject {  
+public:  
+    static TellLikeHer* sharedTellLikeHer();  
+  
+    /* 设置要表白的主角~ */  
+    void setTheActor(CCObject* targer, SEL_CallFuncL selector);  
+  
+    /* 她就在这里，TellLikeHer将代替主角传达心意 */  
+    void sheIsHere();  
+  
+private:  
+    static TellLikeHer* mTellLikeHer;  
+  
+    I_LikeHer* mLikerHer;  
+};  
+#endif  
+
+ 
+要实现函数回调，我们需要两样东西：
+typedef void (CCObject::*SEL_CallFuncL) (CCObject*);
+#define callfuncL_selector(_SELECTOR) (SEL_CallFuncL)(&_SELECTOR)
+定义一个SEL_CallFuncL类型，以及一个传递函数参数的宏，我不太善于解释这个，我是依葫芦画瓢仿照源码写的，所以我选择不解释。
+我们看到有一个I_LikeHer类，这个就是相当于一个接口，TellLikeHer类只保存这种接口的类，所以，我们依旧是面向接口编程，减少了耦合度。
+我们来看看setTheActor函数（函数名取得不好，不要灭了我。。。）：
+[cpp] view plaincopyprint?
+void TellLikeHer::setTheActor( CCObject* targer, SEL_CallFuncL selector ) {  
+    mLikerHer = new I_LikeHer(targer, selector);  
+}  
+
+ 
+很简单，外部传进来的可以是任意的对象类型（当然，必须是继承了CCObject的），TellLikeHer类根据就不需要关心谁传进来了，因为它会创建一个I_LikeHer对象，把传进来的对象包装起来。
+噗，听起来又有点像装饰者模式？是蛮像的。
+再来看看sheIsHere函数：
+[cpp] view plaincopyprint?
+void TellLikeHer::sheIsHere() {  
+    mLikerHer->performSelector();  
+}  
+
+ 
+这确实是在面向接口编程，因为我们只需要调用I_LikeHer接口的performSelector函数，调用了这个函数之后，监听者就会被回调，是的，我们帮他传达了心意了，并且告诉了他结果。
+[cpp] view plaincopyprint?
+void I_LikeHer::performSelector() {  
+    (mTargert->*mSelector)(NULL);  
+}  
+
+ 
+这个是什么东西？它就是我们的主题：函数的回调。
+这有点混乱，我明白。（旁白：你真心觉得只有一点点混乱？）我们来画图理解：
+
+这很好地解决了二义性的问题。
+也许是我的经验太少，对接口的使用了解不深入，所以总以为面向接口编程，就是定义一个接口，让其他类来实现。
+在Java里，我暂时没有遇到什么大问题。
+不过在Cocos2d-x中刚好暴露了这种方式的缺陷。
+好吧，对我来说，这是一次不错的收获。因为二义性的问题，让我认识了Cocos2d-x的消息派发（CCNotificationCenter）以及一种很不错接口使用方式。
+又不过，这种接口的使用方式也不见得是万能的，如果一个接口要实现多个函数，那，又该怎么做呢？于是，我得拿出一本C++的教程，研究一下C++关于接口方面的知识了。
+（旁白：噗，说了等于没说。）
+上一篇【木头Cocos2d-x 017】控件篇(第02章)我不是DJ之圆形音量按钮
+下一篇【木头Cocos2d-x 019】控件篇(第03章)我要战斗之血量条
+顶
+7
+踩
+0
+主题推荐cocos2d-x编程编译器程序员发布
+猜你在找
+Cocos2d-x 30中 物理碰撞检测中onContactBegin回调函数不响应问题cocos2d-x游戏开发十三细说回调函数cocos2d-x游戏开发十三细说回调函数cocos2d-x lua 回调函数Cocos2d-x之回调Lua的函数
+【精品课程】Cocos2d-X开发教程-捕鱼达人【精品课程】Part 1：基础语言-Cocos2d-x手机游戏开发必备C++语言基础【精品课程】太空大战游戏实战课程【精品课程】实战进阶学习Unity3d游戏开发【精品课程】零基础学Java系列从入门到精通
+准备好了么？ 跳吧             ！更多职位尽在 CSDN JOB
+cocos2d-x
+猜猜互动（北京）科技有限公司|15-25K/月我要跳槽
+cocos2d-x开发工程师
+北京互娱科技有限公司|18-35K/月我要跳槽
+客户端程序 （Cocos2D-X C++)
+北京微游互动网络科技有限公司|8-14K/月我要跳槽
+游戏开发（cocos2d)
+杭州米趣网络科技有限公司|10-20K/月我要跳槽
+
+查看评论
+7楼 肥羊000 2014-11-03 20:19发表 [回复]
+
+void I_LikeHer::performSelector() { 
+(mTargert->*mSelector)(NULL); 
+} 
+木头哥好，这句怎么解释呢，不懂什么意思，mTarget是监听者，mSelector是在在监听者中定义的回调函数？
+
+另外 ，这个I_LikeHer::performSelector() 函数在那里定义呢，接口不是没有直接实现的么？需要在继承该接口的类中实现
+Re: 笨木头 2014-11-03 20:48发表 [回复]
+
+回复肥羊000：是的，就是调用那个监听者的函数~这个实现有点繁琐，哈哈，随意看看就好了~
+6楼 yingyiledi 2014-03-26 15:52发表 [回复]
+
+楼主，我也在看你的书，非常喜欢你的写作风格，这个第八章6.4节我刚理清思路。
+5楼 wuleiming2009 2013-04-12 12:12发表 [回复]
+
+写这么个类 不如直接使用CCCallFunc
+发送者直接定义一个CCCallFunc指针 接受者执行指针函数
+代码参考：
+发送者
+CCCallFunc *func = CCCallFunc::create(发送对象,callfunc_selector(发送对象::调用方法));
+
+接受者
+acceptFunc(CCCallFunc* func)
+{
+func->execute();
+}
+Re: 笨木头 2013-04-13 08:03发表 [回复]
+
+回复wuleiming2009：原来还能这么用，谢谢~
+如果要订阅消息的功能，可能还是CCNotificationCenter比较方便，呵呵
+4楼 raaland 2012-12-23 23:01发表 [回复]
+
+被“我、她、他”弄晕了
+Re: 笨木头 2012-12-23 23:40发表 [回复]
+
+回复raaland：我错了...下次尽量少用这么多角色...
+3楼 Zyfrog 2012-12-19 23:50发表 [回复]
+
+MessageDispatch 的addListener函数会将msgListener的计数＋1，这样你在delete msgListener之前，必须还要调用msgListener的一个成员函数，来删除订阅，但是如果象CCNotificationCenter实现，删除订阅的工作可以放到msgListener的析构函数中！这样不仅仅可以少写一行代码，重要的是防止调用者，误调。一点拙见！
+Re: 笨木头 2012-12-20 08:07发表 [回复]
+
+回复Zyfrog：感谢你提的观点...然后,我还是有点不理解, "MessageDispatch 的addListener函数会将msgListener的计数＋1"是因为CCArray会把add进去的对象retain一次, 而CCNotificationCenter的addObserver也有同样的操作...你所说的区别是什么呢?
+Re: Zyfrog 2012-12-25 15:22发表 [回复]
+
+回复笨木头：CCNotificationCenter的addObserver并没有直接将target直接加到Array中，而是通过CCNotificationObserver包装了一下，CCNotificationObserver也并没有将target的retain+1。
+Re: 笨木头 2012-12-25 19:15发表 [回复]
+
+回复Zyfrog：原来如此，感谢~！
+2楼 程序猿传奇 2012-12-08 20:24发表 [回复]
+
+函数指针，还有别的吗？？
+Re: 笨木头 2012-12-10 16:57发表 [回复]
+
+回复程序猿传奇：嘿嘿,暂时就这个~
+1楼 源码剖析之COCOS2D-X 2012-12-06 09:31发表 [回复]
+
+其实就是设计模式中的 观察者模式 COCOS2D-X中有相应的例子
+Re: 笨木头 2012-12-06 12:02发表 [回复]
+
+回复源码剖析之COCOS2D-X：嗯嗯，我也是自己实现了之后才发现cocos2d-x已经有这个功能了，好惆怅~不过学到东西了，嘿嘿
+您还没有登录,请[登录]或[注册]
+* 以上用户言论只代表其个人观点，不代表CSDN网站的观点或立场
+
+核心技术类目
+全部主题 Hadoop AWS 移动游戏 Java Android iOS Swift 智能硬件 Docker OpenStack VPN Spark ERP IE10 Eclipse CRM JavaScript 数据库 Ubuntu NFC WAP jQuery BI HTML5 Spring Apache .NET API HTML SDK IIS Fedora XML LBS Unity Splashtop UML components Windows Mobile Rails QEMU KDE Cassandra CloudStack FTC coremail OPhone CouchBase 云计算 iOS6 Rackspace Web App SpringSide Maemo Compuware 大数据 aptech Perl Tornado Ruby Hibernate ThinkPHP HBase Pure Solr Angular Cloud Foundry Redis Scala Django Bootstrap
+个人资料
+ 访问我的空间 
+笨木头
+ 
+ 1  1
+访问：583574次
+积分：8550
+等级： 
+排名：第882名
+原创：140篇转载：6篇译文：0篇评论：1485条
+文章搜索
+
+木头个人博客
+笨木头与游戏开发
+-
+木头的新书出版喇！
+ 
+china-pub购买
+当当网购买
+亚马逊购买
+博客专栏
+	Cocos2dx3.0实例《别救我》
+文章：11篇
+阅读：74637
+	笨木头Cocos2d-x
+文章：64篇
+阅读：386616
+文章分类
+Android 菜鸟笔记(12)
+笨木头"创业"路(14)
+Android游戏开发 木头乱闯(3)
+木头小教程(2)
+LGame入门学堂(17)
+笨木头 Cocos2D-x(66)
+从创业中谈团队效率之道(3)
+Cocos2d-x与Lua(18)
+FireFly服务端引擎(3)
+资源(1)
+阅读排行
+【木头Cocos2d-x 007】在Lua中使用自定义类——tolua++工具使用（上集）(16255)
+【木头Cocos2d-x 016】控件篇(第01章) 我最爱的九妹和按钮事件(13731)
+【木头Cocos2d-x 009】游戏实例-《跑跑跑》制作教程(第一篇)——加载地图(13724)
+【木头Cocos2d-x 004】HelloWorld倒底怎么玩？(11889)
+【木头Cocos2d-x 026】Lua篇（第01章）：让Lua和C++牵手(11695)
+【木头Cocos2d-x 027】Lua篇（第02章）：Demo讲解之Lua和C++牵手(10901)
+【木头Cocos2d-x 037】retain和release倒底怎么玩？(10888)
+Cocos2d-x3.0游戏实例之《别救我》第五篇——使用Cocostudio UI编辑器创建操作界面(9530)
+【木头Cocos2d-x 008】在Lua中使用自定义类——tolua++工具使用（下集）(9091)
+【木头Cocos2d-x 030】Lua篇（第05章）：C++调用Lua的函数(8810)
+评论排行
+Cocos2d-x书籍名称有奖征集（即将出版）(86)
+老大让我加班, 我断然拒绝。(75)
+【木头Cocos2d-x 016】控件篇(第01章) 我最爱的九妹和按钮事件(55)
+Cocos2d-x3.0游戏实例之《别救我》第三篇——循环滚动背景(51)
+【木头Cocos2d-x 012】游戏实例-《跑跑跑》制作教程（第四篇）——地图卷动(44)
+【木头Cocos2d-x 037】retain和release倒底怎么玩？(43)
+Cocos2d-x3.0游戏实例之《别救我》第六篇——从代码中获取UI控件(41)
+Cocos2d-x3.0游戏实例之《别救我》第五篇——使用Cocostudio UI编辑器创建操作界面(40)
+我的处女作：Android网游 战四方，嘻嘻~(39)
+【木头Cocos2d-x 011】游戏实例-《跑跑跑》制作教程（第三篇）——让主角跑(33)
+最新评论
+【木头Cocos2d-x 015】游戏实例-《跑跑跑》制作教程（第七篇）——添加能吃的物品以及胜利条件
+huangyangquan: 楼主代码在哪里下载的。
+慎用枚举型的ordinal()方法~
+Jenercy: 很对。我们在实际开发过程中，很有可能把写好的枚举里面中间的几个注释掉，那么序号就乱了。所以对应关系最...
+Cocos2d-x3.0 加载Cocostudio的UI后，按钮无法点击的解决方法
+dreamsnow127: 学习了。
+【木头Cocos2d-x 031】Lua篇（第06章）：Lua调用C++的函数
+sujiehao: 为什么没有cocos-lua绑定c++的，这个不懂啊，还有自动生成绑定时遇到一堆问题。。。完全被坑了...
+Cocos2d-x Lua 读取Csv文件，更方便的使用数据
+tmy13: 看到评论里有讨论空字符的问题，对lua现在还不是很了解，具体应该怎么弄比较好呢。。还请赐教。。
+Cocos2d-x3.0游戏实例之《别救我》第九篇——从tmx文件中加载关卡怪物
+zmhsc16: 执行到这里就崩溃了。(第1帧正常，第2帧就提示0xC0000005: 读取位置 0x0000000...
+老大让我加班, 我断然拒绝。
+笨木头: @wddyzzw:抱歉，很久没来看评论。不管是C++、Lua、JS都可以，我全都试过，各有优劣。目前...
+老大让我加班, 我断然拒绝。
+wddyzzw: 我买过博主出版的cocos2d的书，想问一下，如果个人开发一些小型的游戏用哪些工具比较好，用c++,...
+老大让我加班, 我断然拒绝。
+wddyzzw: 我买过博主出版的cocos2d的书，想问一下，如果个人开发一些小型的游戏用哪些工具比较好，用c++,...
+老大让我加班, 我断然拒绝。
+wddyzzw: 我买过博主出版的cocos2d的书，想问一下，如果个人开发一些小型的游戏用哪些工具比较好，用c++,...
+推荐文章
+
+公司简介|招贤纳士|广告服务|银行汇款帐号|联系方式|版权声明|法律顾问|问题报告|合作伙伴|论坛反馈
+网站客服杂志客服微博客服webmaster@csdn.net400-600-2320|北京创新乐知信息技术有限公司 版权所有|江苏乐知网络技术有限公司 提供商务支持
+京 ICP 证 070598 号|Copyright © 1999-2014, CSDN.NET, All Rights Reserved GongshangLogo
+量子统计   

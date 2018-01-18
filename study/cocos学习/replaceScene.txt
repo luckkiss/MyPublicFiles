@@ -1,0 +1,370 @@
+关闭
+
+登录 | 注册
+RunAway
+书不记，熟读可记；义不精，细思可精；惟有志不立，直是无着力处。
+目录视图摘要视图订阅
+Markdown博文大赛开启     中国云计算大会最新议题     5月问答又送C币咯！     做Hadoop工程师，冲击40万年薪     游戏和图形开发研讨会    
+ <三> cocos2dx常见32种场景切换动画
+分类： cocos2dx学习 2014-04-23 17:12 4132人阅读 评论(0) 收藏 举报
+本文转载自：http://www.cnblogs.com/linux-ios/archive/2013/04/09/3010779.html
+
+bool HelloWorld::init()
+{
+    //////////////////////////////
+    // 1. super init first
+    if ( !CCLayer::init() )
+    {
+        return false;
+    }
+    CCSize size =  CCDirector::sharedDirector()->getWinSize();
+    
+    CCSprite * sp= CCSprite::create("background1.png");
+    sp->setPosition(ccp( size.width/2, size.height/2) );
+    addChild(sp);
+    
+    CCLabelTTF * label = CCLabelTTF::create("点击按钮切换", "", 20);
+  //  label->setPosition(ccp(size.width/2, size.height/2));
+    label->setColor(ccc3(255, 0, 255));
+    CCMenuItemLabel * itemLabel = CCMenuItemLabel::create(label, this, menu_selector(HelloWorld::changeScene));
+   // itemLabel->setPosition(ccp(size.width/2,size.height/2));
+    CCMenu * menu = CCMenu::create(itemLabel,NULL);
+    addChild(menu);
+    
+
+    return true;
+}
+
+
+void HelloWorld:: changeScene()
+{
+    CCTransitionScene * reScene = NULL;
+    CCScene * s = TestLayer::scene();
+    float t = 1.2f;
+    
+//    CCTransitionJumpZoom
+//    作用： 创建一个跳动的过渡动画
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionJumpZoom ::create(t , s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionProgressRadialCCW
+//    作用： 创建一个扇形条形式的过渡动画， 逆时针方向
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionProgressRadialCCW::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionProgressRadialCW
+//    作用： 创建一个扇形条形式的过渡动画， 顺时针方向
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionProgressRadialCW::create(t,s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionProgressHorizontal
+//    作用： 创建一个水平条形式的过渡动画，  
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionProgressHorizontal ::create(t,s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionProgressVertical
+//    作用： 创建一个垂直条形式的过渡动画，
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionProgressVertical::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+    
+//    CCTransitionProgressInOut
+//    作用： 创建一个由里向外扩展的过渡动画，
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionProgressInOut::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionProgressOutIn
+//    作用： 创建一个由外向里扩展的过渡动画，
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionProgressOutIn::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionCrossFade
+//    作用：创建一个逐渐透明的过渡动画
+//    参数1：过渡动作的时间
+//    参数2：切换到目标场景的对象
+//    reScene = CCTransitionCrossFade::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionPageTurn
+//    作用：创建一个翻页的过渡动画
+//    参数1：过渡动作持续的时间
+//    参数2：切换的目标场景的对象
+//    参数3：是否逆向翻页
+//    reScene = CCTransitionPageTurn::create(t, s, false);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionFadeTR
+//    作用：创建一个部落格过渡动画， 从左下到右上
+//    参数1：过渡动作持续的时间
+//    参数2：切换的目标场景的对象
+//    reScene =CCTransitionFadeTR::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionFadeBL
+//    作用：创建一个部落格过渡动画， 从右上到左下
+//    参数1：过渡动作持续的时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionFadeBL::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionFadeUp
+//    作用：创建一个从下到上，条形折叠的过渡动画
+//    参数1：过渡动作持续的时间
+//    参数2：切换的目标场景的对象
+//    reScene= CCTransitionFadeUp::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(s);
+
+//    CCTransitionFadeDown
+//    作用：创建一个从上到下，条形折叠的过渡动画
+//    参数1：过渡动作持续的时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionFadeDown::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionTurnOffTiles
+//    作用：创建一个随机方格消失的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene= CCTransitionTurnOffTiles::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionSplitRows
+//    作用：创建一个分行划分切换的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionSplitRows::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionSplitCols
+//    作用：创建一个分列划分切换的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionSplitCols::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionFade
+//    作用：创建一个逐渐过渡到目标颜色的切换动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：目标颜色
+//    reScene= CCTransitionFade::create(t, s, ccc3(255, 0, 0));
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionFlipX
+//    作用：创建一个x轴反转的切换动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：反转类型的枚举变量   左右上下
+//    kOrientationDownOver kOrientationLeftOver kOrientationRightOver  kOrientationUpOver
+//    reScene  = CCTransitionFlipX::create(t, s, kOrientationRightOver);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionFlipY
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：反转类型的枚举变量   左右上下
+//    reScene = CCTransitionFlipY::create(t, s
+//                                        , kOrientationDownOver);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionFlipAngular
+//    作用：创建一个带有反转角切换动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：反转类型的枚举变量   左右上下
+//    reScene = CCTransitionFlipAngular::create(t, s, kOrientationLeftOver);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionZoomFlipX
+//    作用：创建一个带有缩放的x轴反转切换的动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：反转类型的枚举变量   左右上下
+//    reScene=CCTransitionZoomFlipX::create(t, s, kOrientationLeftOver);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionZoomFlipY
+//    作用：创建一个带有缩放的Y轴反转切换的动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：反转类型的枚举变量   左右上下
+//    reScene=CCTransitionZoomFlipY::create(t, s, kOrientationDownOver);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+   
+//    CCTransitionZoomFlipAngular
+//    作用：创建一个带有缩放 ，反转角切换的动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    参数3：反转类型的枚举变量   左右上下
+//    reScene=CCTransitionZoomFlipAngular::create(t, s, kOrientationRightOver);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionShrinkGrow
+//    创建一个放缩交替的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionShrinkGrow::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionRotoZoom
+//    创建一个旋转放缩交替的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionRotoZoom::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionMoveInL
+//    作用：创建一个从左边推入覆盖的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionMoveInL::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionMoveInR
+//    作用：创建一个从右边推入覆盖的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionMoveInR::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionMoveInB
+//    作用：创建一个从下边推入覆盖的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionMoveInB::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionMoveInT
+//    作用：创建一个从上边推入覆盖的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene = CCTransitionMoveInT::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionSlideInL
+//    作用：创建一个从左侧推入并顶出旧场景的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象    
+//    reScene  =CCTransitionSlideInL::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+
+//    CCTransitionSlideInR
+//    作用：创建一个从右侧推入并顶出旧场景的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene  =CCTransitionSlideInR::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionSlideInT
+//    作用：创建一个从顶部推入并顶出旧场景的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+//    reScene  =CCTransitionSlideInT::create(t, s);
+//    CCDirector::sharedDirector()->replaceScene(reScene);
+    
+//    CCTransitionSlideInB
+//    作用：创建一个从下部推入并顶出旧场景的过渡动画
+//    参数1：过渡动作的持续时间
+//    参数2：切换的目标场景的对象
+      reScene  =CCTransitionSlideInB::create(t, s);
+      CCDirector::sharedDirector()->replaceScene(reScene);
+}
+上一篇<二> cocos2dx常见49种Action
+下一篇<四> cocos2dx动画常见22种特效
+主题推荐cocos2dx扩展类helloworldlinux
+猜你在找
+初学cocos2dx luacocos2dx之AppDelegateCocos2d-x教程14－Cocos2d-x 22x版本 Json解析初级篇cocos2d各种动作的使用变色跳动旋转闪烁悬挂放大缩小渐变animation三修改Cocos2dx中的CCMessageBox的按钮文字
+【精品课程】零基础学Java系列从入门到精通【精品课程】JavaScript for Qt Quick(QML)【精品课程】微信公众平台开发入门【精品课程】C语言及程序设计初步【精品课程】零基础学HTML 5实战开发(第一季)
+准备好了么？ 跳吧             ！更多职位尽在 CSDN JOB
+游戏客户端开发工程师（Unity3D/Cocos2dx）
+北京创智优品科技有限公司|25-40K/月我要跳槽
+手游Cocos2DX客户端负责人
+光线游戏|20-30K/月我要跳槽
+聘c++/cocos2dx开发工程师
+杭州冰魄网络科技有限公司|8-14K/月我要跳槽
+cocos2dx游戏开发工程师
+4399北京分公司|10-20K/月我要跳槽
+
+查看评论
+
+  暂无评论
+
+您还没有登录,请[登录]或[注册]
+* 以上用户言论只代表其个人观点，不代表CSDN网站的观点或立场
+
+核心技术类目
+全部主题 Hadoop AWS 移动游戏 Java Android iOS Swift 智能硬件 Docker OpenStack VPN Spark ERP IE10 Eclipse CRM JavaScript 数据库 Ubuntu NFC WAP jQuery BI HTML5 Spring Apache .NET API HTML SDK IIS Fedora XML LBS Unity Splashtop UML components Windows Mobile Rails QEMU KDE Cassandra CloudStack FTC coremail OPhone CouchBase 云计算 iOS6 Rackspace Web App SpringSide Maemo Compuware 大数据 aptech Perl Tornado Ruby Hibernate ThinkPHP HBase Pure Solr Angular Cloud Foundry Redis Scala Django Bootstrap
+个人资料
+ 访问我的空间 
+Concentrations
+ 
+访问：38743次
+积分：532
+等级： 
+排名：千里之外
+原创：7篇转载：40篇译文：1篇评论：1条
+文章搜索
+
+文章分类
+linux 基础(8)
+C/C++编程基础(16)
+C++设计模式(3)
+STL容器- container(2)
+STL算法-algorithm(4)
+读书笔记(1)
+log4cpp(6)
+cocos2dx学习(4)
+手游服务器(1)
+数据库之Mysql(0)
+文章存档
+2015年04月(1)
+2014年10月(1)
+2014年04月(4)
+2013年08月(3)
+2013年07月(13)
+展开
+阅读排行
+<二> cocos2dx常见49种Action(8604)
+<三> cocos2dx常见32种场景切换动画(4120)
+<四> cocos2dx动画常见22种特效(2951)
+log4cpp之配置文件使用方法(1568)
+C/C++控制台带颜色功能输出(1364)
+OpenSSL—SHA1（1）-标准接口(1329)
+<一> cocos2dx不同的坐标系，锚点(1106)
+linux core dump使用(825)
+RakNet linux编译(793)
+log4cpp之Appender(725)
+评论排行
+C++预处理器详解(1)
+log4cpp之配置文件使用方法(0)
+log4cpp之Category(0)
+log4cpp之Appender(0)
+log4cpp之Layout布局(0)
+log4cpp第一个程序HelloWorld(0)
+log4cpp简介与Linux安装(0)
+STL算法简介(0)
+boost学习之nonecopyable(0)
+algorithm—fill_n()(0)
+推荐文章
+
+最新评论
+C++预处理器详解
+风扶月归人: 学习了
+公司简介|招贤纳士|广告服务|银行汇款帐号|联系方式|版权声明|法律顾问|问题报告|合作伙伴|论坛反馈
+网站客服杂志客服微博客服webmaster@csdn.net400-600-2320|北京创新乐知信息技术有限公司 版权所有|江苏乐知网络技术有限公司 提供商务支持
+京 ICP 证 070598 号|Copyright © 1999-2014, CSDN.NET, All Rights Reserved GongshangLogo
+  

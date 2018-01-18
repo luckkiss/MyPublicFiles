@@ -1,0 +1,582 @@
+
+  CCLabelBMFont* font_lv = CCLabelBMFont::create(Utils::intToString(increaseLv).c_str(), "font/onlynumber.fnt");
+
+第一个参数：显示的内容：1x，你也许会奇怪为什么是1x，因为使用的png图必须是连续的，因为程序内部是议连续的scall码识别的。9的后一位的”:“，所以先实现x就得用”:“代替。
+
+第二个参数：图片的名字
+
+第三个参数：每一个数字的宽
+
+第四个参数：每一个数字的高
+
+第五个参数：开始字符，这个可以是单个字符，也可以是字符的ASCII值。
+
+    CCLabelAtlas* labelCoin = CCLabelAtlas::create("0123456789", "number_style_0.png", 20, 31, '0');
+    this->addChild(labelCoin);
+    labelCoin->setString(CC_ITOA(coin));
+
+【本节内容】
+
+在3.x中，Label支持四种方式的标签创建。并新增了阴影Shadow、轮廓Outline、发光Glow效果的支持。还支持文字内容的行间距、文字间距、自动换行的设置。
+
+> 创建系统原生字体API : createWithSystemFont
+
+> 创建TTF             : createWithTTF       （原LabelTTF）
+
+> 创建CharMap         : createWithCharMap   （原LabelAtlas）
+
+> 创建BMFont          : createWithBMFont    （原LabelBMFont）
+
+> Label的属性与方法
+
+> 文字效果渲染        : Shadow、Outline、Glow
+
+> 对齐方式            : TextHAlignment、TextVAlignment
+
+> Label的尺寸大小
+
+> 自动换行
+
+> 行间距、文字间距
+
+> 单独设置某个字符
+
+关于图片资源，请在cocos2dx给出的官方样例cpp-tests中寻找。
+
+【createWithSystemFont】
+
+创建系统原生字体的API。
+
+创建方式如下：
+
+//
+    staticLabel* createWithSystemFont(
+        conststd::string& text,                          //字符串内容
+        conststd::string& font,                          //字体（字体名称、或字体文件）
+        floatfontSize,                                   //字号
+        constSize& dimensions = Size::ZERO,              //label的尺寸大小，默认不设置尺寸
+        TextHAlignment hAlignment = TextHAlignment:EFT, //水平对齐方式，默认左对齐:EFT
+        TextVAlignment vAlignment = TextVAlignment::TOP   //垂直对齐方式，默认顶部  ::TOP
+    );
+//
+使用举例：
+//
+    //使用系统的字体名称 “Arial” 来创建
+    Label* lb1 = Label::createWithSystemFont(“123abc”, “Arial”, 24);
+//
+【createWithTTF】
+
+创建TTF的方式有以下两种：
+
+> 方式一：与2.x中LabelTTF的创建类似，不过使用的fontFile必须为字体文件。
+
+> 方式二：通过TTF的配置信息数据结构TTFConfig来创建。
+
+1、方式一：与System Font创建类似
+
+注：区别在于fontFile必须为字体文件（如”*.ttf”），即不支持使用系统字体名称来创建。
+
+//
+    staticLabel* createWithTTF(
+        conststd::string& text,
+        conststd::string& fontFile, //必须为字体文件（如”*.ttf”）
+        floatfontSize,
+        constSize& dimensions = Size::ZERO,
+        TextHAlignment hAlignment = TextHAlignment:EFT,
+        TextVAlignment vAlignment = TextVAlignment::TOP
+    );
+//
+2、方式二：通过TTFConfig配置来创建
+
+2.1、TTFConfig配置
+
+//
+    typedefstruct_ttfConfig
+    {
+        std::string fontFilePath;  //字体文件路径，如 “fonts/Arial.ttf”
+        intfontSize;              //字体大小，默认”12″
+        GlyphCollection glyphs;    //使用的字符集，默认”DYNAMIC”
+        constchar*customGlyphs;
+        booldistanceFieldEnabled; //是否让字体紧凑，默认false
+        intoutlineSize;           //字体轮廓大小，默认”0″
+        //构造函数
+        _ttfConfig(
+            constchar* filePath = “”,
+            intsize = 12,
+            constGlyphCollection& glyphCollection = GlyphCollection:YNAMIC,
+            constchar*customGlyphCollection = nullptr,
+            booluseDistanceField = false,
+            intoutline = 0
+        );
+    }TTFConfig;
+//
+  2.2、使用TTFConfig创建TTF
+//
+    staticLabel* createWithTTF(
+        constTTFConfig& ttfConfig, //TTFConfig配置
+        conststd::string& text,    //字符串内容
+        TextHAlignment alignment = TextHAlignment:EFT,
+        intmaxLineWidth = 0        //最大文本行宽，0表示不设置。可用于自动换行只用
+    );
+//
+   使用举例：
+//
+    TTFConfig ttfConfig;
+    ttfConfig.fontFilePath = “fonts/Marker Felt.ttf”; //必须配置
+    ttfConfig.fontSize = 12;
+    ttfConfig.distanceFieldEnabled = false;
+    ttfConfig.outlineSize = 0;
+    ttfConfig.glyphs = GlyphCollection:YNAMIC;
+    ttfConfig.customGlyphs = nullptr;
+    //使用TTFConfig配置，来创建TTF
+    Label* lb3 = Label::createWithTTF(ttfConfig, “123abc”);
+//
+【createWithCharMap】
+
+CharMap的用法与2.x中的LabelAtlas是一样的，一般用来显示数字。不过它也可以用来显示其他字符，如英文字符。
+
+字体文件资源一般来自一张.png图片，或.plist文件。
+
+注：图片中每个字符的大小必须是固定的，若要改变字体大小，只能通过setScale放缩来实现。
+
+创建CharMap有三种方式：
+
+> 使用.png图片创建
+
+> 使用纹理Texture2D创建
+
+> 使用.plist创建
+
+从图片中从左到右，一块一块截取。从字符startCharMap开始一一对应。
+
+第一块小图片对应字符startCharMap；第二块小图片对应字符startCharMap+1；第三块对应startCharMap+2 …… 以此类推。
+
+注：startCharMap为ASCII码，即：数字 ‘0’ 为48。
+
+//
+    //charMapFile  : 字符资源图片png
+    //itemWidth    : 每个字符的宽
+    //itemHeight   : 每个字符的高
+    //startCharMap : 图片第一个是什么字符
+    staticLabel* createWithCharMap(conststd::string& charMapFile, intitemWidth, intitemHeight, intstartCharMap);
+    staticLabel* createWithCharMap(Texture2D* texture, intitemWidth, intitemHeight, intstartCharMap);
+    staticLabel* createWithCharMap(conststd::string& plistFile);
+//
+0、字符图片资源
+
+digit.png：200*20（每个数字20*20）。
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第1张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+1、使用.png创建
+
+//
+    //create 字符图片.png，每个字符宽，高，起始字符
+    Label* lb4 = Label::createWithCharMap(“fonts/digit.png”, 20, 20, ‘0’);
+    lb4->setString(“123456″); //设置字符串内容
+//
+2、使用Texture2D创建
+
+使用方法实际上与.png是类似的。
+
+//
+    //创建图片纹理Texture2D
+    Texture2D* texture = TextureCache::getInstance()->addImage(“fonts/digit.png”);
+    Label* lb5 = Label::createWithCharMap(texture, 20, 20, ‘0’);
+    lb5->setString(“123456″); //设置字符串内容
+//
+3、使用.plist创建
+
+在digit.plist里需要配置：用到的字符图片资源.png，每个字符的宽、高，起始字符。
+
+如下所示：
+
+//
+    <?xmlversion=”1.0″encoding=”UTF-8″?>
+    <!DOCTYPE plist PUBLIC “-//Apple//DTD PLIST 1.0//EN” “http://www.apple.com/DTDs/PropertyList-1.0.dtd”>
+    <plistversion=”1.0″>
+    <dict>
+        <key>version</key>           <!– plist版本 –>
+        <integer>1</integer>
+        <key>textureFilename</key>   <!– 字符图片资源: digit.png –>
+        <string>digit.png</string>
+        <key>itemWidth</key>         <!– 每个字符的宽: 20 –>
+        <integer>20</integer>
+        <key>itemHeight</key>        <!– 每个字符的高: 20 –>
+        <integer>20</integer>
+        <key>firstChar</key>         <!– 起始字符    : ‘0’ –>
+        <integer>48</integer>
+    </dict>
+    </plist>
+//
+    使用plist创建CharMap的方法：
+//
+    //plist的配置信息，如上所示
+    Label* lb6 = Label::createWithCharMap(“fonts/digit.plist”);
+    lb6->setString(“123456″);
+//
+【createWithBMFont】
+
+BMFont的用法与2.x中的LabelBMFont是一样的。
+
+这个类使用之前，需要添加好字体文件，包括一个图片文件（*.png）和一个字体坐标文件（*.fnt），这两个文件名称必须一样。可以下载一个fnt编辑工具来自定义字体。
+
+值得注意的是：
+
+> 在2.x中，可以使用 getChildByTag(i) 来获取第i个字符，对其单独设置属性、动作等。
+
+> 在3.x中，则是使用 getLetter(i) ，而不再是 getChildByTag(i) 。
+
+这个类也没办法指定字体的字号大小，需要用setScale来缩放调整大小。
+
+//
+    staticLabel* createWithBMFont(
+        conststd::string& bmfontFilePath, //字体文件.font
+        conststd::string& text,           //内容
+        constTextHAlignment& alignment = TextHAlignment:EFT,
+        intmaxLineWidth = 0,
+        constVec2& imageOffset = Vec2::ZERO       //字符图片的起始左上角坐标。一般不要设置这个参数，因为坐标的配置均已在.font里完成
+    );
+//
+    使用举例：
+//
+    Label* lb7 = Label::createWithBMFont(“bitmapFontTest.fnt”, “123abc”, TextHAlignment:EFT);
+//
+【Label的属性与方法】
+
+Label继承于：
+
+> SpriteBatchNode : 用于加快字体的渲染速度。
+
+> LabelProtocol   : 用于设置Label的字符串内容。
+
+主要函数如下：
+
+//
+classCC_DLL Label : publicSpriteBatchNode, publicLabelProtocol
+{
+/**
+ * 字体设置
+ *     – setSystemFontName : 字体（字体名字、字体文件）
+ *     – setSystemFontSize : 字体大小
+ *     – setString         : 字符串内容
+ *     – setTextColor      : 文字内容颜色
+ **/
+    //设置System Font类型的字体（字体名字、字体文件）
+    //设置System Font类型的字体大小
+    //请不要用于其他Label类型！（TTF、CharMap、BMFont）
+    virtualvoidsetSystemFontName(conststd::string& systemFont);
+    virtualvoidsetSystemFontSize(floatfontSize);
+    virtualconststd::string& getSystemFontName() const{ return_systemFont;}
+    virtualfloatgetSystemFontSize() const{ return_systemFontSize;}
+    //改变字符串内容并重新渲染
+    //注：如果你没有为Label设置TTF/BMFont/CharMap，会产生很大的开销
+    virtualvoidsetString(conststd::string& text) override;
+    virtualconststd::string& getString() constoverride {  return_originalUTF8String; }
+    //设置文字颜色，仅支持TTF和System Font
+    //注：区别 Node节点的颜色
+    //      Node ::setColor     : Color3B
+    //      Label::setTextColor : Color4B
+    virtualvoidsetTextColor(constColor4B &color);
+    constColor4B& getTextColor() const{ return_textColor; }
+/**
+ * 获取Label的某个字符
+ *     – getLetter
+ *     – 不支持System Font
+ **/
+    //不支持System Font
+    virtualSprite* getLetter(intlettetIndex);
+/**
+ * 文字渲染效果
+ *     – Shadow  : 阴影
+ *     – Outline : 轮廓，仅支持TTF
+ *     – Glow    : 发光，仅支持TTF
+ **/
+    //阴影Shadow（阴影颜色，相对Label的偏移，模糊度）
+    //注: 其中blurRadius在3.2中并未实现
+    virtualvoidenableShadow(constColor4B& shadowColor = Color4B::BLACK,constSize &offset = Size(2,-2), intblurRadius = 0);
+    //轮廓Outline，仅支持TTF（轮廓颜色，轮廓粗细）
+    virtualvoidenableOutline(constColor4B& outlineColor,intoutlineSize = -1);
+    //发光Glow，仅支持TTF
+    virtualvoidenableGlow(constColor4B& glowColor);
+    //取消阴影/轮廓/发光渲染效果
+    virtualvoiddisableEffect();
+/**
+ * 对齐方式
+ *    > TextHAlignment : 水平对齐方式
+ *        – TextHAlignmentEFT    : 左对齐
+ *        – TextHAlignment:CENTER  : 居中对齐，默认
+ *        – TextHAlignment:RIGHT   : 右对齐
+ *    > TextVAlignment : 垂直对齐方式
+ *        – TextVAlignment::TOP    : 顶部，默认
+ *        – TextVAlignment::CENTER : 中心
+ *        – TextVAlignment::BOTTOM : 底部
+ **/
+    //设置对齐方式
+    voidsetAlignment(TextHAlignment hAlignment) { setAlignment(hAlignment,_vAlignment);}
+    voidsetAlignment(TextHAlignment hAlignment,TextVAlignment vAlignment);
+    TextHAlignment getTextAlignment() const{ return_hAlignment;}
+    //设置水平对齐方式
+    voidsetHorizontalAlignment(TextHAlignment hAlignment) { setAlignment(hAlignment,_vAlignment); }
+    TextHAlignment getHorizontalAlignment() const{ return_hAlignment; }
+    //设置垂直对齐方式
+    voidsetVerticalAlignment(TextVAlignment vAlignment) { setAlignment(_hAlignment,vAlignment); }
+    TextVAlignment getVerticalAlignment() const{ return_vAlignment; }
+/**
+ * Label尺寸大小
+ *     – setLineBreakWithoutSpace : 开启自动换行功能
+ *     – setMaxLineWidth          : 文字内容的最大行宽
+ *     – setWidth                 : Label尺寸大小，宽
+ *     – setHeight                : Label尺寸大小，高
+ *     – setDimensions            : Label尺寸大小
+ **/
+    //是否开启自动换行功能
+    voidsetLineBreakWithoutSpace(boolbreakWithoutSpace);
+    //最大行宽，内容超过MaxLineWidth，就会自动换行
+    //前提条件: 仅在width==0时，起作用。
+    //  > width == 0;
+    //  > setMaxLineWidth(lineWidth);
+    //  > setLineBreakWithoutSpace(true);
+    //它的效果与下面是类似的.
+    //  > setWidth(lineWidth);
+    //  > setLineBreakWithoutSpace(true);
+    //只是width==0时，就无法设置文本的对齐方式了.
+    voidsetMaxLineWidth(unsigned intmaxLineWidth);
+    unsigned intgetMaxLineWidth() { return_maxLineWidth;}
+    //设置Label的尺寸大小
+    //可以理解为Label的文本框大小
+    //当setLineBreakWithoutSpace(true)时，内容超过width，会自动换行
+    //并且内容支持文本的对齐方式
+    //注：设置尺寸大小，使用的是setDimensions，而不是setContentSize ！
+    voidsetWidth(unsigned intwidth) { setDimensions(width,_labelHeight); }
+    voidsetHeight(unsigned intheight){ setDimensions(_labelWidth,height); }
+    voidsetDimensions(unsigned intwidth,unsigned intheight);
+    unsigned intgetWidth() const{ return_labelWidth; }
+    unsigned intgetHeight() const{ return_labelHeight; }
+    constSize& getDimensions() const{ return_labelDimensions; }
+/**
+ * v3.2 新增
+ *     – setLineHeight        : 设置行间距
+ *     – setAdditionalKerning : 设置文字间距
+ *     – getStringLength      : 字符串内容长度
+ */
+    //设置行间距，不支持system font
+    voidsetLineHeight(floatheight);
+    floatgetLineHeight() const;
+    //设置文字间距，不支持system font
+    voidsetAdditionalKerning(floatspace);
+    floatgetAdditionalKerning() const;
+    //获取Label的字符串内容长度
+    intgetStringLength() const;
+/**
+ * 重写Node父类的方法
+ *     – setBlendFunc   : 混合模式
+ *     – setScale       : 放缩字体大小
+ *     – addChild       : 添加子节点
+ *     – getDescription : 显示Label的描述
+ **/
+    //设置颜色混合模式
+    virtualvoidsetBlendFunc(constBlendFunc &blendFunc) override;
+    //放缩字体大小（一般用于CharMap、BMFont）
+    virtualvoidsetScale(floatscale) override;
+    virtualvoidsetScaleX(floatscaleX) override;
+    virtualvoidsetScaleY(floatscaleY) override;
+    virtualfloatgetScaleX() constoverride;
+    virtualfloatgetScaleY() constoverride;
+    //添加子节点
+    virtualvoidaddChild(Node * child, intzOrder=0, inttag=0) override;
+    virtualvoidsortAllChildren() override;
+    //Label描述
+    virtualstd::string getDescription() constoverride;
+};
+//
+【文字渲染效果】
+
+支持三种渲染效果：
+
+> Shadow  : 阴影
+
+> Outline : 轮廓，仅支持TTF
+
+> Glow    : 发光，仅支持TTF
+
+注：其中Outline与Glow两个效果，只会作用一个。即无法一起使用。
+
+ 
+
+使用举例：
+
+//
+    Label* lb = Label::createWithTTF(“123abc”, “fonts/Marker Felt.ttf”, 50);
+    lb->setPosition(visibleSize / 2);
+    this->addChild(lb);
+    lb->enableShadow(Color4B::GREEN, Size(10, 10)); //阴影
+    lb->enableOutline(Color4B::RED, 3);             //轮廓
+    //lb->enableGlow(Color4B::GREEN);                 //发光
+    //取消阴影、轮廓、发光效果
+    //lb->disableEffect();
+//
+ 如图所示：
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第2张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第3张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第4张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+【对齐方式】
+
+> TextHAlignment : 水平对齐方式
+
+– TextHAlignmentEFT    : 左对齐
+
+– TextHAlignment:CENTER  : 居中对齐，默认
+
+– TextHAlignment:RIGHT   : 右对齐
+
+> TextVAlignment : 垂直对齐方式
+
+– TextVAlignment::TOP    : 顶部，默认
+
+– TextVAlignment::CENTER : 中心
+
+– TextVAlignment::BOTTOM : 底部
+
+仅在设置了Label的尺寸大小setDimensions(width,height)，大于显示的字符串内容的尺寸大小，才会起作用。
+
+对齐方式举例，如下几张图片所示：
+
+对齐方式为：
+
+> TextHAlignmentEFT
+
+> TextVAlignment::TOP
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第5张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第6张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第7张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+【自动换行】
+
+在3.x中，自动换行有两种方式。（当然你也可以使用C++里的转移字符’n’进行手动换行）
+
+> 利用lb->setLineBreakWithoutSpace(true)，来支持自动换行功能。
+
+> 1. 利用 setMaxLineWidth(maxLineWidth)，来控制自动换行。
+
+> 2. 利用 setDimensions(width , height)，来控制自动换行。
+
+1、利用setMaxLineWidth
+
+设置每行显示文字的最大宽度。
+
+注：这种方法仅在Label width == 0的情况下，才会有效。
+
+使用方法：
+
+//
+    lb->setLineBreakWithoutSpace(true);
+    lb->setMaxLineWidth(120); //最大宽度120
+//
+ 如图：
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第8张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+2、利用setDimensions
+
+使用方法：
+
+//
+    lb->setLineBreakWithoutSpace(true);
+    lb->setWidth(80);         //设置Label尺寸宽80
+    lb->setMaxLineWidth(120); //设置了Label width，这个就无效了
+//
+ 如图：
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第9张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+【文字间距】
+
+间距的调整，是在 v3.2 之后才出现的。可以设置文本内容的行间距与文字间距。
+
+注：不支持System Font。
+
+> setLineHeight        : 设置行间距
+
+> setAdditionalKerning : 设置额外文字间距
+
+使用举例：
+
+//
+    lb->setLineHeight(80);
+    lb->setAdditionalKerning(10);
+//
+ 图解：
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第10张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+【单独设置某个字符】
+
+学过2.x中的LabelBMFont的同学，应该知道这个是怎么回事吧？
+
+在3.x中，使用TTF、CharMap、BMFont创建的文字标签，其字符串内容的每个字符都是一个Sprite精灵图片，可以对其进行单独的设置。如精灵放缩、执行动作等。
+
+注：不支持System Font。
+
+> lb->getStringLength() : 获取字符串内容的总长度
+
+> lb->getLetter(i)      : 获取第i个位置上的字符
+
+使用举例：
+
+//
+    Label* lb = Label::createWithTTF(“123abc”, “fonts/Marker Felt.ttf”, 50);
+    lb->setPosition(visibleSize / 2);
+    this->addChild(lb);
+    //获取字符串总长度，length = 6
+    CCLOG(“%d”, lb->getStringLength());
+    //获取第1个字符
+    Sprite* letter1 = lb->getLetter(1);
+    letter1->setColor(Color3B::GREEN); //设置颜色
+    letter1->setScale(2.0f);           //放缩
+    //获取第4个字符
+    Sprite* letter4 = lb->getLetter(4);
+    letter4->setColor(Color3B::RED);  //设置颜色
+    letter4->runAction(RepeatForever::create(RotateBy::create(1.0f, 90))); //执行旋转动作
+//
+如图：
+
+cocos2dx3.2技术之新字体标签Label浅析 - 第11张  | 游戏开发网-最好的游戏编程开发技术网站！
+
+转自：http://www.yxkfw.com/?p=12972
+00
+
+分享(0) 收藏(0) 举报
+ 
+levis_king
+Rank: 9Rank: 9Rank: 9
+威望1 点义气5 点
+ AQ小生
+打招呼发消息	
+沙发
+ 发表于 2014-11-8 09:03:50
+顶楼主
+
+举报
+返回列表发新帖回复
+高级模式
+BColorImageLinkQuoteCodeSmilies
+您需要登录后才可以回帖 登录 | 注册  
+ 回帖后跳转到最后一页
+关闭
+江湖传闻
+只需1个月，轻松掌握HTML5前端开发！
+
+查看 »
+手机版|9RIA.com ( 京ICP备11007422号-2 )  
+GMT+8, 2015-5-20 08:54 , Processed in 0.170189 second(s), 17 queries .
+Powered by Discuz! X2
+© 2001-2011 Comsenz Inc.
+回顶部

@@ -1,0 +1,169 @@
+CCClippingNode* SourcesOfBoxUI::makeclip()
+{
+    //制作遮罩
+    CCSize winsize = CCDirector::sharedDirector()->getWinSize();
+    CCRenderTexture *renderTexture = CCRenderTexture::create(winsize.width, winsize.height);
+    renderTexture->begin();
+    this->getParent()->visit();
+    renderTexture->end();
+
+    CCSprite *_spr = CCSprite::createWithTexture(renderTexture->getSprite()->getTexture());
+    _spr->setPosition(ccp(winsize.width/2, winsize.height/2));
+    _spr->setFlipY(true);
+    
+    CCLayerColor* color = CCLayerColor::create(ccc4(127,127,127,255));
+    
+    CCClippingNode* m_pClipper = CCClippingNode::create();
+    m_pClipper->setStencil(m_bg);//模板
+    m_pClipper->setPosition(CCPointZero);
+    m_pClipper->setAnchorPoint(CCPointZero);
+    m_pClipper->addChild(color,1);//底板
+    m_pClipper->setInverted(true);//设置是显示被裁剪的部分，还是显示裁剪。true 显示剩余部分。false显示模板部分，即裁剪部分
+    m_pClipper->setAlphaThreshold(0.0f);
+    
+    return m_pClipper;
+}
+
+
+
+
+
+//
+//  DialogLabel.cpp
+//  ddz
+//
+//  Created by chenzhuyuan on 15-3-31.
+//
+//
+
+#include "DialogLabel.h"
+#include "CallFuncInterval.h"
+#include "Global.h"
+
+DialogLabel::DialogLabel()
+: m_pClipper(NULL)
+, m_pColor1(NULL)
+, m_pColor2(NULL)
+, m_pSpeakLab(NULL)
+, m_iCurLine(0)
+, m_fSpeedPercentPerLine(0.)
+{
+	
+}
+
+DialogLabel::~DialogLabel()
+{
+	m_pSpeakLab = NULL;
+}
+
+void DialogLabel::onNodeLoaded(CCNode * pNode, CCNodeLoader * pNodeLoader)
+{
+	CCNode* pNodeStencil = CCNode::create();
+	pNodeStencil->setAnchorPoint(CCPointZero);
+	pNodeStencil->setPosition(CCPointZero);
+	pNodeStencil->setContentSize( this->getContentSize() );
+	
+	m_pClipper = CCClippingNode::create();
+	m_pClipper->setStencil(pNodeStencil);
+	m_pClipper->setPosition(CCPointZero);
+	m_pClipper->setAnchorPoint(CCPointZero);
+	this->addChild(m_pClipper);
+	
+	
+	m_pColor1 = CCLayerColor::create(ccc4(255, 0, 0, 255));
+	m_pColor2 = CCLayerColor::create(ccc4(255, 0, 0, 255));
+	pNodeStencil->addChild(m_pColor1);
+	pNodeStencil->addChild(m_pColor2);
+	
+	m_pClipper->setInverted(true);
+	m_pClipper->setContentSize(this->getContentSize());
+	
+	m_pColor1->setAnchorPoint(CCPointZero);
+	m_pColor1->setPosition(CCPointZero);
+	m_pColor1->setContentSize(this->getContentSize());
+	
+	m_pColor2->setAnchorPoint(CCPointZero);
+	m_pColor2->setPosition(CCPointZero);
+	m_pColor2->setContentSize(this->getContentSize());
+	
+	//
+	m_pSpeakLab = EnhLabelTTF::create("", DefaultFontName, 24);
+	m_pSpeakLab->setDimension( this->getContentSize() );
+	m_pSpeakLab->setAlignmentTextBlock(Align_Center);
+	m_pSpeakLab->setString("");
+	m_pSpeakLab->commitSettings();
+	m_pClipper->addChild(m_pSpeakLab);
+}
+
+void DialogLabel::setString(const char* str)
+{
+	m_pSpeakLab->setString(str);
+	m_pSpeakLab->commitSettings();
+}
+
+void DialogLabel::setString(const char* str, ccFontDefinition fontDef)
+{	
+	m_pSpeakLab->setFontDefinitionById( 101, fontDef );
+    m_pSpeakLab->setFontSize(fontDef.m_fontSize);
+
+	string strDialogContent = "#fdc=101#";
+	strDialogContent += str;
+	strDialogContent += "#/fdc#";
+	
+	setString(strDialogContent.c_str());
+}
+
+void DialogLabel::startDialogAni(float speed /*= 0.4*/)
+{
+	m_fSpeedPercentPerLine = speed;
+	m_iCurLine = 0;
+	m_fShowedFirstLine = 0.f;
+	
+	//
+	unscheduleUpdate();
+	scheduleUpdate();
+	update(0.f);
+}
+
+void DialogLabel::update(float dt)
+{
+	m_fShowedFirstLine += (dt * m_fSpeedPercentPerLine);
+	
+	// 行数
+	int lineCount = m_pSpeakLab->getLineCount();
+	// 总框大小
+	CCSize totalSize = this->getContentSize();
+	totalSize.width *= 1.2;
+	// 全部文字区域大小
+	const CCSize contentAreaSize = m_pSpeakLab->getTotalSize();
+	// 单行文字区域大小
+	const CCSize perLineSize = CCSizeMake(totalSize.width, contentAreaSize.height / m_pSpeakLab->getLineCount());
+	
+	// 不同得字体对齐方式，不同得底部恐怖算法
+	float bottomOffset = 0.f;
+	CommonAlignment align = m_pSpeakLab->getAlignmentTextBlock();
+	if (align == Align_TopLeft || align == Align_TopRight || align == Align_Top)
+		bottomOffset = (totalSize.height - contentAreaSize.height);
+	else if (align == Align_Left || align == Align_Center || align == Align_Right)
+		bottomOffset = (totalSize.height - contentAreaSize.height) / 2;
+	
+	// 大行遮罩和小行遮罩的分割线高度
+	const float halvingLineHeight = perLineSize.height * (lineCount - m_iCurLine - 1) + bottomOffset;
+	
+	// 大行遮罩
+	m_pColor1->setContentSize(CCSizeMake(totalSize.width, halvingLineHeight));
+	// 小行遮罩
+	m_pColor2->setContentSize(perLineSize);
+	m_pColor2->setPosition(perLineSize.width*m_fShowedFirstLine, halvingLineHeight);
+	
+	// 超出一整行
+	if (m_fShowedFirstLine > 1)
+	{
+		m_iCurLine++;
+		m_fShowedFirstLine = 0.f;
+		
+		// 显示完成
+		if (m_iCurLine >= m_pSpeakLab->getLineCount())
+			unscheduleUpdate();
+	}
+}

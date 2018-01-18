@@ -1,0 +1,86 @@
+
+首页论坛 博客Weekly学习之路登录|注册
+9Tech开发者社区HTML5AndroidiOSGenesis-3DUnity3DCocos2d-X
+搜索
+发表评论
+门户 > Cocos2d-X > 正文
+Cocos2d-x动画加速与减速
+NovaCreo|2013-12-02 09:01|次浏览|移动开发(224)cocos2d-x(158)技术应用(63)
+动画是游戏的必然要素之一，在整个游戏过程中，又有着加速、减速动画的需求。以塔防为例子，布塔的时候希望能够将游戏减速，布好塔后，则希望能将游戏加速；当某个怪被冰冻后，移动速度减缓，而其他怪的移动速度不变。cocos2d-x引擎为我们提供了很强大的接口，下面就将我实验的过程复述一遍，也方便他人。
+
+1）实现全局的加速、减速。
+通过设置Scheduler的timeScale，可以实现全局的加、减速。代码非常简单：
+1
+2
+3
+CCScheduler* pScheduler = CCDirector::sharedDirector()->getScheduler();
+pScheduler->setTimeScale(2.0f); //实现加速效果
+pScheduler->setTimeScale(0.5f);//实现减速效果 
+2）实现对某个CCActionInterval动作的加速、减速
+方法一：很容易想到的一个方法就是改变CCAnimation的delay unit。代码如下：
+1
+2
+3
+CCAnimation* pAnimation = CCAnimationCache::sharedAnimationCache()->animationByName(“xxx”);
+ 
+pAnimation->setDelayUnit(pAnimation->getDelayUnit()*0.2f); //速度为原来的5倍
+这个方法有一个缺点：改变了CCAnimationCache中这个animation的delay unit。也就是说以后即使再从CCAnimationCache中获取这个animation，其delay unit已经是原来的0.2倍了。
+方法二：cocos2d-x提供了CCSpeed的类，可以实现动画速度的调节。用法如下：
+1
+2
+3
+4
+5
+6
+7
+CCActionInterval* pActionInterval = CCMoveTo::create(5.0f, ccp(500.0f, 100.0f));
+ 
+CCSpeed* pSpeed= CCSpeed::create(pActionInterval, 1.5f); //1.5倍速运行
+ 
+CCSpeed* pSpeed1 = CCSpeed::create(pActionInterval, 0.2f);// 0.2倍速运行
+ 
+pSprite->runAction(pSpeed);
+注意，如果pSprite有已经运行的动作，要用pSprite->stopActionByTag()停掉之前的动作，不然两个动作就叠加到一起了。
+3）对某个CCFiniteTimeAction类型动作的加速、减速
+大部分时候，一个游戏人物的动作并非由单一一个CCActionInterval类型的动作构成，而是一串动作连起来，构成一个Sequence。 用CCSequence::create(…)创建的对象都是CCFinteTimeAction类型的，CCSpeed并不适用。在CCSpeed类的说明里，明确指 出”This action can’t be Sequenceable because it is not an CCIntervalAction”。 那对于Sequence就束手无策了吗？非也。cocos2d-x引擎自带例子中，schedulerTest给我们展示了如何控制某个sprite的 scheduler的timescale。废话少说，直接看代码。
+在class TwoSchedulers中定义了两个customer的scheduler和两个CCActionManager。
+1
+2
+3
+4
+CCScheduler *sched1;
+CCScheduler *sched2;
+CCActionManager *actionManager1;
+CCActionManager *actionManager2;
+在onEnter函数中，分别对两个sprite设置customer的ActionManager.
+1
+2
+3
+4
+5
+6
+7
+8
+9
+CCScheduler *defaultScheduler = CCDirector::sharedDirector()->getScheduler();
+// Create a new scheduler, and link it to the main scheduler
+sched1 = new CCScheduler();
+defaultScheduler->scheduleUpdateForTarget(sched1, 0, false);
+// Create a new ActionManager, and link it to the new scheudler
+actionManager1 = new CCActionManager();
+sched1->scheduleUpdateForTarget(actionManager1, 0, false);
+// Replace the default ActionManager with the new one.
+pSprite1->setActionManager(actionManager1);
+通过以上的代码，就可以通过改变sched1的timescale来改变pSprite1的动作的快慢了。有了这种方法，那么就可以放弃CCSpeed的那种方法了。
+来自：novacreo
+分享到微信人喜欢 
+分享到：
+相关文章
+支持日本手机游戏市场走向黄金时代的因素Cocos2d-x植物大战僵尸（八）实现冷却倒计时看“千与千寻” 如何启发Minecraft中的动画师Cocos2d-x植物大战僵尸（七）触摸生成植物枪Cocos2d-x植物大战僵尸（六）触摸植物卡的消息响
+京ICP备11007422号 京公网安备号11010702000184 联系邮箱：webmaster@9tech.cn
+9TECH开发者社区 版权所有
+Copyright © 2012-2013 9tech.cn, All Rights Reserved
+返回顶部
+
+
+

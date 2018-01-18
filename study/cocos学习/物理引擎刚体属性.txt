@@ -1,0 +1,54 @@
+定义了这个物理刚体是属于哪个类别的掩码
+setCategoryBitmask（）
+它定义了哪些类别的刚体与此物理刚体产生交集（相互作用）的通知
+setContactTestBitmask（）
+它定义了哪些类别的物理刚体可以与这物理刚体发生碰撞
+setCollisionBitmask（）
+
+
+每个函数说了这么多，那么具体是什么意思呢？  看看下面的例子：
+box1->getPhysicsBody()->setCategoryBitmask(0x01); // 0001
+box1->getPhysicsBody()->setContactTestBitmask(0x04); // 0100
+box1->getPhysicsBody()->setCollisionBitmask(0x03); // 0011
+box2->getPhysicsBody()->setCategoryBitmask(0x02);    // 0010
+box2->getPhysicsBody()->setContactTestBitmask(0x08); // 1000
+box2->getPhysicsBody()->setCollisionBitmask(0x01);   // 0001
+
+box3->getPhysicsBody()->setCategoryBitmask(0x04);    // 0100
+box3->getPhysicsBody()->setContactTestBitmask(0x01); // 0001
+box3->getPhysicsBody()->setCollisionBitmask(0x06);   // 0101
+ box1 和 box2 发生碰撞
+ box1 box3  不会
+ box2 box3 也不会
+为什么呢?    解释如下：
+box1的类别掩码 00000000 00000000 00000000 00000001
+可接到通知         00000000 00000000 00000000 00000100
+允许撞我            00000000 00000000 00000000 00000011
+
+box2的类别掩码  00000000 00000000 00000000 00000010
+可接到通知         00000000 00000000 00000000 00001000
+允许撞我             00000000 00000000 00000000 00000001
+
+box3的类别掩码  00000000 00000000 00000000 00000100
+可接到通知          00000000 00000000 00000000 00000001
+允许撞我             00000000 00000000 00000000 00000110
+
+现在做运算呗：
+box1的允许撞我     00000000 00000000 00000000 00000011    与box2的类别掩码做按位与运算
+box2的类别掩码     00000000 00000000 00000000 00000010
+结果为：                00000000 00000000 00000000 00000010      不为0,  box1会撞到box2撞到。
+同理：
+box2的允许撞我     00000000 00000000 00000000 00000001    与box1的类别掩码做按位与运算
+box1的类别掩码     00000000 00000000 00000000 00000001
+结果为：                00000000 00000000 00000000 00000001      不为0,  box2会撞到box1撞到。
+他们会相互受到撞击的。
+
+box2的允许撞我与box3的类别掩码  按位与运算为0；
+box3的允许撞我与box2的类别掩码  按位与运算为0；
+
+box1的允许撞我与box3的类别掩码  按位与运算为0；
+box3的允许撞我与box1的类别掩码  按位与运算为0；
+所以：
+box1 and box2 发生碰撞
+but the box1 box3  不会
+the box2 box3 也不会

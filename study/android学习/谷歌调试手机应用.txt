@@ -1,0 +1,27 @@
+
+
+谷歌模拟器查看手机APK的信息：
+
+电脑和手机都安装谷歌
+
+谷歌需要翻墙，或者
+sudo vi /etc/hosts
+i编辑模式
+61.91.161.217    chrome-devtools-frontend.appspot.com
+61.91.161.217    chrometophone.appspot.com
+esc退出编辑模式
+:wq+enter 退出保存
+
+电脑打开
+chrome://inspect
+勾选Discover USB devices
+选择游戏inspect
+
+adb查看apk日志:
+
+adb kill-server
+adb start-server
+adb shell
+adb logcat |grep -E "GAME_TAG|chrom|U8SDK" 正则表达式输出符合tag的log
+或者通过eclipse里的logical查看日志
+

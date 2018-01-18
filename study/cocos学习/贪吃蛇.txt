@@ -1,0 +1,1052 @@
+s251774434 | 我的经验 | 我的收入 | 私信(0) | 百度首页 
+百度经验新闻网页贴吧知道经验音乐图片视频地图百科文库
+帮助
+首页分类杂志任务签到回享计划商城知道
+百度经验 > 游戏/数码 > 互联网
+Cocos2d-x 3.0final 教程13-贪食蛇游戏案例
+|浏览：156|更新：2014-06-17 09:52
+运行效果展示：
+
+
+
+
+
+全部代码和资源:
+
+http://download.csdn.net/detail/sdhjob/7424329
+
+1.准备资源
+
+背景图片menuback.png：
+
+
+
+节点图片
+
+greenstar.png  
+
+redstar.png     
+
+yellowstar.png 
+
+2.创建一个新项目（如何配置环境和创建新项目，参考前面教程）：
+
+cocos new -p com.xdl.game -l cpp -d ~/Desktop/test0515 snamegame
+
+3.添加文件
+
+首先将HelloWoldScene.h HelloWorld.cpp移走，然后添加GameScene.h GameScene.cpp HelpScene.h HelpScene.cpp MainMenu.h MainMenu.cpp
+
+加上原来自动生成的AppDelegate.h 和AppDelegate.cpp共8个文件
+
+4.编码
+
+AppDelegate.h (这个文件基本没改动)
+
+#ifndef  _APP_DELEGATE_H_
+
+#define  _APP_DELEGATE_H_
+
+#include "cocos2d.h"
+
+class  AppDelegate : private cocos2d::Application
+
+{
+
+public:
+
+    AppDelegate();
+
+virtual ~AppDelegate();
+
+virtualbool applicationDidFinishLaunching();
+
+virtualvoid applicationDidEnterBackground();
+
+virtualvoid applicationWillEnterForeground();
+
+};
+
+#endif // _APP_DELEGATE_H_
+
+AppDelegate.cpp 
+
+#include "AppDelegate.h"
+
+#include "MainMenu.h"
+
+#include "SimpleAudioEngine.h"    
+
+USING_NS_CC;
+
+usingnamespaceCocosDenshion;
+
+AppDelegate::AppDelegate() {
+
+}
+
+AppDelegate::~AppDelegate() 
+
+{
+
+}
+
+boolAppDelegate::applicationDidFinishLaunching() {
+
+// initialize director
+
+auto director = Director::getInstance();
+
+auto glview = director->getOpenGLView();
+
+if(!glview) {
+
+        glview = GLView::create("My Game");
+
+        director->setOpenGLView(glview);
+
+    }
+
+// turn on display FPS
+
+    director->setDisplayStats(false);
+
+// set FPS. the default value is 1.0/60 if you don't call this
+
+    director->setAnimationInterval(1.0 / 60);
+
+// create a scene. it's an autorelease object
+
+auto scene = MainMenu::createScene();
+
+// run
+
+    director->runWithScene(scene);
+
+//开始播放背景音乐
+
+SimpleAudioEngine::getInstance()->playBackgroundMusic("background.mp3");
+
+returntrue;
+
+}
+
+// This function will be called when the app is inactive. When comes a phone call,it's be invoked too
+
+voidAppDelegate::applicationDidEnterBackground() {
+
+Director::getInstance()->stopAnimation();
+
+// if you use SimpleAudioEngine, it must be pause
+
+SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
+
+}
+
+// this function will be called when the app is active again
+
+voidAppDelegate::applicationWillEnterForeground() {
+
+Director::getInstance()->startAnimation();
+
+// if you use SimpleAudioEngine, it must resume here
+
+SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
+
+}
+
+说明： 在入口类中加入了背景音乐的播放，并且入口场景设计为MainMenu,往下看
+
+MainMenu.h
+
+#ifndef __snakegame__MainMenu__
+
+#define __snakegame__MainMenu__
+
+#include "cocos2d.h"
+
+USING_NS_CC;
+
+class MainMenu:publicLayer{
+
+public:
+
+staticScene * createScene();
+
+CREATE_FUNC(MainMenu);
+
+virtualbool init();
+
+void menuCallBack(Ref * object);
+
+};
+
+#endif
+
+MainMenu.cpp
+
+#include "MainMenu.h"
+
+#include "GameScene.h"
+
+#include "HelpScene.h"
+
+Scene * MainMenu::createScene()
+
+{   auto scene=Scene::create();
+
+auto layer=MainMenu::create();
+
+    scene->addChild(layer);
+
+return scene;
+
+}
+
+boolMainMenu::init(){
+
+if(!Layer::init())
+
+    {
+
+returnfalse;
+
+    }
+
+auto size=Director::getInstance()->getWinSize();
+
+//添加背景
+
+auto spriteBK=Sprite::create("menuback.png");
+
+     spriteBK->setPosition(Point(size.width/2,size.height/2));
+
+this->addChild(spriteBK);
+
+//添加2个菜单条目
+
+auto menuItemStart=MenuItemFont::create("Start", CC_CALLBACK_1(MainMenu::menuCallBack,this));
+
+     menuItemStart->setTag(1);
+
+auto menuItemHelp=MenuItemFont::create("Help", CC_CALLBACK_1(MainMenu::menuCallBack,this));
+
+     menuItemHelp->setTag(2);
+
+auto menu=Menu::create(menuItemStart,menuItemHelp,NULL);
+
+     menu->setPosition(Point::ZERO);
+
+     menuItemStart->setPosition(Point(size.width-menuItemStart->getContentSize().width-100,menuItemStart->getContentSize().height+10));
+
+     menuItemHelp->setPosition(Point(size.width-menuItemHelp->getContentSize().width-10,menuItemHelp->getContentSize().height+10));
+
+this->addChild(menu);
+
+returntrue;
+
+}
+
+voidMainMenu::menuCallBack(Ref * object){
+
+auto target=(Node *)object;
+
+Scene * scene;
+
+switch (target->getTag()) {
+
+case1://startgame
+
+            scene=Game::createScene();
+
+break;
+
+case2://Helpgame
+
+            scene=Help::createScene();
+
+break;
+
+default:
+
+break;
+
+    }
+
+Director::getInstance()->replaceScene(scene);
+
+  }
+
+说明：在菜单场景中实现了跳转到帮助场景和游戏场景，往下看：
+
+HelpScene.h
+
+#ifndef __snakegame__HelpScene__
+
+#define __snakegame__HelpScene__
+
+#include "cocos2d.h"
+
+USING_NS_CC;
+
+class Help:publicLayer{
+
+public:
+
+staticScene * createScene();
+
+CREATE_FUNC(Help);
+
+virtualbool init();
+
+void menuCallBack(Ref * object);
+
+};
+
+#endif
+
+HelpScene.cpp
+
+#include "HelpScene.h"
+
+#include "MainMenu.h"
+
+Scene * Help::createScene(){
+
+auto scene=Scene::create();
+
+auto layer=Help::create();
+
+    scene->addChild(layer);
+
+return scene;
+
+   }
+
+boolHelp::init(){
+
+if(!Layer::init())
+
+        {
+
+returnfalse;
+
+        }
+
+auto size=Director::getInstance()->getWinSize();
+
+//添加背景
+
+auto spriteBK=Sprite::create("menuback.png");
+
+    spriteBK->setPosition(Point(size.width/2,size.height/2));
+
+    spriteBK->setOpacity(75);
+
+this->addChild(spriteBK);
+
+//帮助信息
+
+auto labelScore=Label::create("帮助信息", "宋体", 25);
+
+    labelScore->setPosition(Point(size.width-80,size.height-50));
+
+this->addChild(labelScore);
+
+//返回按钮
+
+auto menuItemBack=MenuItemFont::create("Back", CC_CALLBACK_1(Help::menuCallBack,this));
+
+auto menu=Menu::create(menuItemBack,NULL);
+
+    menu->setPosition(Point::ZERO);
+
+    menuItemBack->setPosition(Point(size.width-menuItemBack->getContentSize().width-100,menuItemBack->getContentSize().height+10));
+
+this->addChild(menu);
+
+returntrue;
+
+}
+
+voidHelp::menuCallBack(Ref * object){
+
+auto scene=MainMenu::createScene();
+
+Director::getInstance()->replaceScene(scene);
+
+}
+
+说明：这里只是实现了一个帮助信息显示，可以返回到菜单，下面看游戏场景
+
+GameScene.h
+
+#ifndef __snakegame__GameScene__
+
+#define __snakegame__GameScene__
+
+#include "cocos2d.h"
+
+USING_NS_CC;
+
+enumclass ENUM_DIR{
+
+    DIR_UP,
+
+    DIR_DOWN,
+
+    DIR_LEFT,
+
+    DIR_RIGHT,
+
+    DIR_STOP
+
+};
+
+class SnakeNode:publicSprite
+
+{
+
+public :
+
+enumENUM_DIR m_dir;//移动方向
+
+int nodeType;       //节点类型1蛇头 2 身体 3 食物
+
+int m_row,m_col;    //当前节点的行列坐标
+
+staticSnakeNode* create(int type);
+
+virtualbool init(int type);
+
+void setPositionRC(int row,int col);//设置节点的坐标
+
+};
+
+class Game:publicLayer{
+
+public:
+
+SnakeNode * spFood;//食物
+
+SnakeNode * spHead;//蛇头
+
+int m_score;
+
+Vector<SnakeNode *> allBody;//身体
+
+staticScene * createScene();
+
+CREATE_FUNC(Game);
+
+virtualbool init();
+
+void menuCallBack(Ref * object);
+
+void gameLogic(float t);
+
+void newBody();//添加一个新的身体节点
+
+void moveBody();//移动所有的身体节点
+
+};
+
+#endif
+
+GameScene.cpp
+
+//
+
+//  GameScene.cpp
+
+//  Created by 沈 shen on 14-5-27.
+
+//
+
+#include "GameScene.h"
+
+#include "MainMenu.h"
+
+#include "SimpleAudioEngine.h"
+
+usingnamespace CocosDenshion;
+
+Scene * Game::createScene(){
+
+auto scene=Scene::create();
+
+auto layer=Game::create();
+
+    scene->addChild(layer);
+
+return scene;
+
+}
+
+SnakeNode* SnakeNode::create(int type)
+
+{
+
+    SnakeNode *pRet = new SnakeNode();
+
+if (pRet && pRet->init(type))
+
+        {
+
+            pRet->autorelease();
+
+return pRet;
+
+        }
+
+else
+
+        {
+
+delete pRet;
+
+            pRet = NULL;
+
+returnNULL;
+
+        }
+
+}
+
+bool SnakeNode::init(int type){
+
+if(!Sprite::init())
+
+    {
+
+returnfalse;
+
+    }
+
+///根据类型不同初始化不同的纹理
+
+switch (type) {
+
+case1://蛇头
+
+        {auto sprite=Sprite::create("redstar.png");
+
+            sprite->setAnchorPoint(Point::ZERO);
+
+this->addChild(sprite);
+
+            m_dir=ENUM_DIR::DIR_RIGHT;//向右移动
+
+        }
+
+break;
+
+case2://身体
+
+        {auto sprite=Sprite::create("greenstar.png");
+
+            sprite->setAnchorPoint(Point::ZERO);
+
+this->addChild(sprite);
+
+        }
+
+            m_dir=ENUM_DIR::DIR_STOP;//
+
+break;
+
+case3://食物
+
+        {auto sprite=Sprite::create("yellowstar.png");
+
+            sprite->setAnchorPoint(Point::ZERO);
+
+this->addChild(sprite);
+
+        }
+
+             m_dir=ENUM_DIR::DIR_STOP;//
+
+break;
+
+default:
+
+break;
+
+    }
+
+returntrue;
+
+}
+
+void SnakeNode::setPositionRC(int row,int col)//设置节点的坐标
+
+{    this->m_row=row;
+
+this->m_col=col;
+
+      setPosition(Point(col*32,row*32));
+
+}
+
+bool  Game::init(){
+
+if(!Layer::init())
+
+    {
+
+returnfalse;
+
+    }
+
+//添加地图
+
+auto draw=DrawNode::create();
+
+    draw->setAnchorPoint(Point::ZERO);
+
+    draw->setPosition(Point::ZERO);
+
+this->addChild(draw);
+
+for(int i=0;i<11;i++)
+
+    {
+
+    draw->drawSegment(Point(0,32*i), Point(320,32*i), 1, Color4F(1,1,1,1));
+
+    draw->drawSegment(Point(32*i,0), Point(32*i,320), 1, Color4F(1,1,1,1));
+
+    }
+
+//添加蛇头
+
+    spHead=SnakeNode::create(1);
+
+this->addChild(spHead);
+
+//添加身体
+
+//添加食物
+
+     spFood=SnakeNode::create(3);
+
+int row=rand()%10;
+
+int col=rand()%10;
+
+    spFood->setPositionRC(row,col);
+
+this->addChild(spFood);
+
+auto size=Director::getInstance()->getWinSize();
+
+//添加背景
+
+auto spriteBK=Sprite::create("menuback.png");
+
+    spriteBK->setPosition(Point(size.width/2,size.height/2));
+
+    spriteBK->setOpacity(75);
+
+this->addChild(spriteBK);
+
+//分数显示
+
+    m_score=0;
+
+auto labelScore=Label::create("分数：0", "宋体", 25);
+
+    labelScore->setTag(110);
+
+    labelScore->setPosition(Point(size.width-80,size.height-50));
+
+this->addChild(labelScore);
+
+//返回按钮
+
+auto menuItemBack=MenuItemFont::create("Back", CC_CALLBACK_1(Game::menuCallBack,this));
+
+auto menu=Menu::create(menuItemBack,NULL);
+
+    menu->setPosition(Point::ZERO);
+
+    menuItemBack->setPosition(Point(size.width-menuItemBack->getContentSize().width-50,menuItemBack->getContentSize().height+10));
+
+this->addChild(menu);
+
+//计划任务
+
+this->schedule(schedule_selector(Game::gameLogic),0.5);
+
+//加入用户触摸事件侦听
+
+auto listener=EventListenerTouchOneByOne::create();
+
+    listener->setSwallowTouches(true);
+
+    listener->onTouchBegan=[&](Touch * t,Event * e){
+
+//改变贪食蛇移动的方向
+
+int col=t->getLocation().x/32;
+
+int row=t->getLocation().y/32;
+
+int spHeadCol=spHead->getPositionX()/32;
+
+int spHeadRow=spHead->getPositionY()/32;
+
+if(abs(spHeadCol-col)>abs(spHeadRow-row))
+
+        {
+
+if(spHeadCol<col)
+
+            {
+
+            spHead->m_dir=ENUM_DIR::DIR_RIGHT;
+
+            }else
+
+            {
+
+                spHead->m_dir=ENUM_DIR::DIR_LEFT;
+
+            }
+
+        }
+
+else
+
+            {if(spHeadRow<row)
+
+                {
+
+                spHead->m_dir=ENUM_DIR::DIR_UP;
+
+                }else
+
+                    {
+
+                    spHead->m_dir=ENUM_DIR::DIR_DOWN;
+
+                    }
+
+        }
+
+returntrue;
+
+    };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
+returntrue;
+
+}
+
+void  Game::menuCallBack(Ref * object){
+
+auto scene=MainMenu::createScene();
+
+    Director::getInstance()->replaceScene(scene);
+
+}
+
+void Game::gameLogic(float t)
+
+{   moveBody();//移动所有身体节点
+
+//蛇头移动
+
+switch (spHead->m_dir) {
+
+case ENUM_DIR::DIR_RIGHT:
+
+            spHead->runAction(MoveBy::create(0.3, Point(32,0)));
+
+            spHead->m_col++;
+
+break;
+
+case ENUM_DIR::DIR_LEFT:
+
+            spHead->runAction(MoveBy::create(0.3, Point(-32,0)));
+
+            spHead->m_col--;
+
+break;
+
+case ENUM_DIR::DIR_DOWN:
+
+            spHead->runAction(MoveBy::create(0.3, Point(0,-32)));
+
+            spHead->m_row--;
+
+break;
+
+case ENUM_DIR::DIR_UP:
+
+            spHead->runAction(MoveBy::create(0.3, Point(0,32)));
+
+            spHead->m_row++;
+
+break;
+
+default:
+
+break;
+
+    }
+
+//碰撞检测
+
+if(spHead->m_row==spFood->m_row&&
+
+       spHead->m_col==spFood->m_col)
+
+    {  //音效的播放
+
+        SimpleAudioEngine::getInstance()->playEffect("eat.wav");
+
+//分数增加
+
+this->m_score+=100;
+
+        Label * label=(Label *)this->getChildByTag(110);
+
+char strscore[20];
+
+        sprintf(strscore, "分数:%d",m_score);
+
+        label->setString(strscore);
+
+//食物产生新的位置
+
+int row=rand()%10;
+
+int col=rand()%10;
+
+        spFood->setPositionRC(row,col);
+
+//添加节点
+
+        newBody();
+
+    }
+
+}
+
+void Game::newBody()//添加一个新的身体节点
+
+{
+
+auto bodynode=SnakeNode::create(2);
+
+//设置这个节点的方向和坐标
+
+if(allBody.size()>0)//有身体节点
+
+    { //最后一个身体的节点
+
+auto lastbody=allBody.at(allBody.size()-1);
+
+      bodynode->m_dir=lastbody->m_dir;
+
+switch (bodynode->m_dir) {
+
+case ENUM_DIR::DIR_UP:
+
+                bodynode->setPositionRC(lastbody->m_row-1, lastbody->m_col);
+
+break;
+
+case ENUM_DIR::DIR_DOWN:
+
+                bodynode->setPositionRC(lastbody->m_row+1, lastbody->m_col);
+
+break;
+
+case ENUM_DIR::DIR_LEFT:
+
+                bodynode->setPositionRC(lastbody->m_row, lastbody->m_col+1);
+
+break;
+
+case ENUM_DIR::DIR_RIGHT:
+
+                bodynode->setPositionRC(lastbody->m_row, lastbody->m_col-1);
+
+break;
+
+default:
+
+break;
+
+        }
+
+    }else
+
+    { //新节点的方向等于蛇头的方向
+
+        bodynode->m_dir=spHead->m_dir;
+
+switch (bodynode->m_dir) {
+
+case ENUM_DIR::DIR_UP:
+
+                bodynode->setPositionRC(spHead->m_row-1, spHead->m_col);
+
+break;
+
+case ENUM_DIR::DIR_DOWN:
+
+                bodynode->setPositionRC(spHead->m_row+1, spHead->m_col);
+
+break;
+
+case ENUM_DIR::DIR_LEFT:
+
+                bodynode->setPositionRC(spHead->m_row, spHead->m_col+1);
+
+break;
+
+case ENUM_DIR::DIR_RIGHT:
+
+                bodynode->setPositionRC(spHead->m_row, spHead->m_col-1);
+
+break;
+
+default:
+
+break;
+
+        }
+
+    }
+
+//添加节点到当前图层
+
+this->addChild(bodynode);
+
+//添加节点到集合中
+
+    allBody.pushBack(bodynode);
+
+}
+
+void Game::moveBody()//移动所有的身体节点
+
+{
+
+if(allBody.size()==0){return;}
+
+for(auto bodynode:allBody)
+
+    {
+
+switch (bodynode->m_dir) {
+
+case ENUM_DIR::DIR_RIGHT:
+
+            bodynode->runAction(MoveBy::create(0.3, Point(32,0)));
+
+            bodynode->m_col++;
+
+break;
+
+case ENUM_DIR::DIR_LEFT:
+
+            bodynode->runAction(MoveBy::create(0.3, Point(-32,0)));
+
+            bodynode->m_col--;
+
+break;
+
+case ENUM_DIR::DIR_DOWN:
+
+            bodynode->runAction(MoveBy::create(0.3, Point(0,-32)));
+
+            bodynode->m_row--;
+
+break;
+
+case ENUM_DIR::DIR_UP:
+
+            bodynode->runAction(MoveBy::create(0.3, Point(0,32)));
+
+            bodynode->m_row++;
+
+break;
+
+default:
+
+break;
+
+        }
+
+     }
+
+//移动完成之后，改变每个body的方向
+
+for(int i=allBody.size()-1;i>0;i--)
+
+    { //每个节点的方向调整为它前一个节点的方向
+
+        allBody.at(i)->m_dir=allBody.at(i-1)->m_dir;
+
+    }
+
+    allBody.at(0)->m_dir=spHead->m_dir;
+
+}
+
+原作者：草莓vc
+经验内容仅供参考，如果您需解决具体问题(尤其法律、医学等领域)，建议您详细咨询相关领域专业人士。
+举报作者声明：本篇经验系本人依照真实经历原创，未经许可，谢绝转载。
+投票(1)
+有得(0)
+我有疑问(0)
+换一批相关经验
+iOS培训-cocos2d-x游戏开发教程(十三)-刘辉02013.09.22
+iOS培训-cocos2d-x游戏开发教程(三)-刘辉02013.09.16
+iOS培训-cocos2d-x游戏开发教程(七)-刘辉02013.09.18
+iOS培训-cocos2d-x游戏开发教程(六)-刘辉02013.09.18
+iOS培训-cocos2d-x游戏开发教程(五)-刘辉02013.09.18
+相关标签
+今日支出元
+写经验 有钱赚 >>
+
+lampbrother点
+作者的经验
+
+Linux下使用Gitblit工具创建Git仓库...
+织梦分类不生成index.html解决方法--...
+Cocos2d-x 3.0教程22Cocos Studio动...
+Cocos2d-x 3.0教程21ScrollView原理...
+Cocos2d-x 3.0教程20 《2048》手游开...
+旅游
+•••
+如要投诉，请到百度经验投诉中心，如要提出意见、建议， 请到百度经验管理吧反馈。
+热门杂志
+第1期
+你不知道的iPad技巧
+2333次分享
+第1期
+win7电脑那些事
+4130次分享
+第2期
+新人玩转百度经验
+643次分享
+第1期
+Win8.1实用小技巧
+1860次分享
+第1期
+小白装大神
+942次分享
+0
+©2015Baidu  使用百度前必读  百度经验协议  作者创作作品协议
+s251774434
+
+◆◆
+分享健康经验，微波炉、榨汁机……重重好礼扑面而来>>

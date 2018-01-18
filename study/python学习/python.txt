@@ -1,0 +1,8 @@
+
+python打包成可执行文件：
+安装pyinstaller：
+下载pyinstaller，
+python setup.py install
+执行pyinstaller：
+pyinstaller -F main.py related.py //两个py文件一起打包
+pyinstaller main.spec

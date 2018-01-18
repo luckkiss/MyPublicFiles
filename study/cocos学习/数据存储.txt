@@ -1,0 +1,179 @@
+关闭
+
+登录 | 注册
+目录视图摘要视图订阅
+Markdown那么好，还不来试试     扒一扒你遇到过最NB开发项目     5月问答又送C币咯！     Hadoop实战高手速成宝典    
+ cocos2dx-数据存储
+分类： android 2014-07-03 12:26 610人阅读 评论(0) 收藏 举报
+声  明
+
+       本教程仅用于初学cocos2dx同学使用，内容由本人（孤狼）学习过程中笔记编写，本教程使用cocos2dx版本为2.1.4。本教程内容可以自由转载，但必须同时附带本声明，或注明出处。
+gl.paea.cn版权所有。
+
+
+       大家好，欢迎回到“和屌丝一起学cocos2dx”系列教程，上节我们说到了音乐音效，不知道大家有没有做出来效果呢？这节我们还是要继续学习哦，可别偷懒，这节我们要说的是数据存储。
+
+
+
+【一】：最简简介
+
+       手机游戏中，用户数据存储有多种方式，网游可以直接保存服务器，单机可以保存在SQLite等，cocos2dx为了更好的跨平台操作，采用了自己的CCUserDefault。
+
+【二】：函数
+
+setBoolForKey("键","值");            //设置一个bool值
+setStringForKey("键","值");         //设置一个string值
+setDoubleForKey("键","值");        //设置一个double值
+setFloatForKey("键","值");           //设置一个float值
+setIntegerForKey("键","值");        //设置一个int值
+getBoolForKey("键","默认值");    //读取一个bool值
+getStringForKey("键","默认值");  //读取一个string值
+getDoubleForKey("键","默认值");//读取一个double值
+getFloatForKey("键","默认值");    //读取一个float值
+getIntegerForKey("键","默认值"); //读取一个int值
+flush();                                              //保存到文件
+
+这里set就是用键值对保存数据，最后一定要用flush把数据保存到文件，否则会丢失。
+get函数获取数据的时候，要给个默认值，以便获取不到的时候代替数据，防止空异常。
+
+
+【三】：示例
+
+1.新建项目Datademo
+
+Datademo.cpp
+
+CCSize mysize=CCDirector::sharedDirector()->getWinSize();
+CCLabelTTF* pLabel = CCLabelTTF::create("none", "Arial", 24);
+pLabel->setPosition(ccp(mysize.width / 2, mysize.height - 50));
+this->addChild(pLabel, 1);
+//判断数据
+if(CCUserDefault::sharedUserDefault()->getBoolForKey("havedata",false)){
+   //有存档
+   string jj=CCUserDefault::sharedUserDefault()->getStringForKey("jj","none");
+   double aa=CCUserDefault::sharedUserDefault()->getDoubleForKey("aa",0.0);
+   double bb=CCUserDefault::sharedUserDefault()->getFloatForKey("bb",0.0f);
+   double cc=CCUserDefault::sharedUserDefault()->getIntegerForKey("cc",0);
+   //转换
+   //jj.data();可以直接获取值
+   char out[50];
+   sprintf(out,"%f",aa);
+   //输出
+   pLabel->setString(out);
+}else{
+   //没存档
+   pLabel->setString("no data,now set.");
+   CCUserDefault::sharedUserDefault()->setBoolForKey("havedata",true);
+   CCUserDefault::sharedUserDefault()->setStringForKey("jj","Hello Boy!");
+   CCUserDefault::sharedUserDefault()->setDoubleForKey("aa",1.25);
+   CCUserDefault::sharedUserDefault()->setFloatForKey("bb",2.33f);
+   CCUserDefault::sharedUserDefault()->setIntegerForKey("cc",5);
+   //保存
+   CCUserDefault::sharedUserDefault()->flush();
+}
+
+
+
+       好了，我们来看一下效果。
+
+
+
+
+
+
+本节DEMO下载
+
+转载请注明出处：http://gl.paea.cn/contents/252ac3e59bc18069.html
+
+
+上一篇：和屌丝一起学cocos2dx-音乐音效
+下一篇：和屌丝一起学cocos2dx-粒子特效
+
+上一篇cocos2dx-音乐音效
+下一篇cocos2dx-粒子特效
+主题推荐数据存储cocos2dx手机游戏microsoft跨平台
+猜你在找
+Cocos2d-x 多分辨率适配完全解析cocos2dx 文件处理cocos2dx-音乐音效修改Cocos2dx中的CCMessageBox的按钮文字Cocos2d-x虚拟摇杆控制精灵上下左右运动----之游戏开发《赵云要格斗》1
+【精品课程】JavaScript for Qt Quick(QML)【精品课程】零基础学Java系列从入门到精通【精品课程】微信公众平台开发入门【精品课程】C语言及程序设计初步【精品课程】C语言及程序设计提高
+准备好了么？ 跳吧             ！更多职位尽在 CSDN JOB
+游戏客户端开发工程师（Unity3D/Cocos2dx）
+北京创智优品科技有限公司|25-40K/月我要跳槽
+手游Cocos2DX客户端负责人
+光线游戏|20-30K/月我要跳槽
+聘c++/cocos2dx开发工程师
+杭州冰魄网络科技有限公司|8-14K/月我要跳槽
+cocos2dx游戏开发工程师
+4399北京分公司|10-20K/月我要跳槽
+
+查看评论
+
+  暂无评论
+
+您还没有登录,请[登录]或[注册]
+* 以上用户言论只代表其个人观点，不代表CSDN网站的观点或立场
+
+核心技术类目
+全部主题 Hadoop AWS 移动游戏 Java Android iOS Swift 智能硬件 Docker OpenStack VPN Spark ERP IE10 Eclipse CRM JavaScript 数据库 Ubuntu NFC WAP jQuery BI HTML5 Spring Apache .NET API HTML SDK IIS Fedora XML LBS Unity Splashtop UML components Windows Mobile Rails QEMU KDE Cassandra CloudStack FTC coremail OPhone CouchBase 云计算 iOS6 Rackspace Web App SpringSide Maemo Compuware 大数据 aptech Perl Tornado Ruby Hibernate ThinkPHP HBase Pure Solr Angular Cloud Foundry Redis Scala Django Bootstrap
+个人资料
+ 访问我的空间 
+jianpengxuexikaifa
+ 
+访问：59084次
+积分：923
+等级： 
+排名：千里之外
+原创：7篇转载：109篇译文：7篇评论：6条
+文章搜索
+
+文章分类
+android(116)
+手机支付(1)
+银联(1)
+文章存档
+2014年11月(2)
+2014年10月(1)
+2014年09月(3)
+2014年07月(57)
+2014年06月(7)
+展开
+阅读排行
+android 自适应 多屏幕支持 --Android多分辨率适配(4299)
+Eclipse的Aptana studio插件安装(2736)
+TP-link WR841N无线路由器设置无线桥接(WDS功能)图文教程(2493)
+cocos2dx-粒子特效(2340)
+cocos2dx-更新函数(2102)
+PhoneGap+jQuery Mobile+Rest 访问远程数据(1929)
+PHP开发环境搭建 （XAMPP+Xdebug+netbeans，配置调试），创建第一个php项目(1563)
+cocos2dx-音乐音效(1517)
+cocos2d-x 创建项目，安装，打包，无需cygwin(1261)
+cocos2dx-多点触控(1158)
+评论排行
+cocos2dx-CCMenu菜单(2)
+eclipse jee配置jetty的两种方法---tomcat一样的服务器(1)
+PhoneGap+jQuery Mobile+Rest 访问远程数据(1)
+Destoon文件结构(1)
+android 自适应 多屏幕支持 --Android多分辨率适配(1)
+cocos2dx-更新函数(0)
+升级后cocos2dx项目创建失败，解决方案(0)
+cocos2dx-触屏事件(0)
+cocos2dx-多点触控(0)
+cocos2dx-碰撞(0)
+推荐文章
+
+最新评论
+cocos2dx-CCMenu菜单
+安卓小修士: 你博客的图片都看不了怎么回事
+cocos2dx-CCMenu菜单
+安卓小修士: 我也初学这个，C++没学过，感觉有点吃力
+PhoneGap+jQuery Mobile+Rest 访问远程数据
+qq_16911027: 好文，必须顶
+android 自适应 多屏幕支持 --Android多分辨率适配
+lovexieyuan520: 这位仁兄啊，我问个问题，就是我放一个高精度的图片，然后比它低的自动压缩，压缩不会失真啊，为什么还要多...
+eclipse jee配置jetty的两种方法---tomcat一样的服务器
+遗忘之刃: 你好，点击Download additional server adapters：一直刷不出来 je...
+Destoon文件结构
+tryToRead: 楼主无私，好详细，以后肯定需要。mark
+公司简介|招贤纳士|广告服务|银行汇款帐号|联系方式|版权声明|法律顾问|问题报告|合作伙伴|论坛反馈
+网站客服杂志客服微博客服webmaster@csdn.net400-600-2320|北京创新乐知信息技术有限公司 版权所有|江苏乐知网络技术有限公司 提供商务支持
+京 ICP 证 070598 号|Copyright © 1999-2014, CSDN.NET, All Rights Reserved GongshangLogo
+  
