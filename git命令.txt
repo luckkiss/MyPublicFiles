@@ -1,6 +1,14 @@
-﻿
-代理
+﻿https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/0013752340242354807e192f02a44359908df8a5643103a000
+
+查看代理
 git config --global http.proxy
+
+代理
+git config --global http.proxy 172.0.0.1:1080
+git config --global https.proxy 172.0.0.1:1080
+删除代理
+git config --global --unset http.proxy
+git config --global --unset https.proxy
 
 从github下载下来
 git clone git@github.com:qq564213362/MyPublicFiles.git
