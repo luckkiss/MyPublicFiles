@@ -1,0 +1,75 @@
+{
+	"configs" : [
+		{
+			"remarks" : "美国洛杉矶线路",
+			"id" : "887B776A96B73744D451C71DDB4581D7",
+			"server" : "173.82.245.94",
+			"server_port" : 25018,
+			"server_udp_port" : 0,
+			"password" : "ow69n4",
+			"method" : "chacha20",
+			"protocol" : "auth_aes128_md5",
+			"protocolparam" : "",
+			"obfs" : "tls1.2_ticket_auth",
+			"obfsparam" : "",
+			"remarks_base64" : "576O5Zu95rSb5p2J55-257q_6Lev",
+			"group" : "Poro免费版",
+			"enable" : true,
+			"udp_over_tcp" : false
+		},
+		{
+			"remarks" : "",
+			"id" : "71E70AB038753A37A31EA503A50999AC",
+			"server" : "77.55.233.2",
+			"server_port" : 6899,
+			"server_udp_port" : 0,
+			"password" : "bbaaz..com",
+			"method" : "aes-128-ctr",
+			"protocol" : "auth_sha1_v4",
+			"protocolparam" : "",
+			"obfs" : "tls1.2_ticket_auth",
+			"obfsparam" : "",
+			"remarks_base64" : "",
+			"group" : "",
+			"enable" : true,
+			"udp_over_tcp" : false
+		}
+	],
+	"index" : 0,
+	"random" : true,
+	"sysProxyMode" : 3,
+	"shareOverLan" : false,
+	"localPort" : 1080,
+	"localAuthPassword" : "NPNP5P-EcdF9jRE-wgI_",
+	"dnsServer" : "",
+	"reconnectTimes" : 2,
+	"randomAlgorithm" : 3,
+	"randomInGroup" : false,
+	"TTL" : 0,
+	"connectTimeout" : 5,
+	"proxyRuleMode" : 2,
+	"proxyEnable" : false,
+	"pacDirectGoProxy" : false,
+	"proxyType" : 0,
+	"proxyHost" : null,
+	"proxyPort" : 0,
+	"proxyAuthUser" : null,
+	"proxyAuthPass" : null,
+	"proxyUserAgent" : null,
+	"authUser" : null,
+	"authPass" : null,
+	"autoBan" : false,
+	"sameHostForSameTarget" : false,
+	"keepVisitTime" : 180,
+	"isHideTips" : false,
+	"nodeFeedAutoUpdate" : true,
+	"serverSubscribes" : [
+
+	],
+	"token" : {
+
+	},
+	"portMap" : {
+
+	}
+}
