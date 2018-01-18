@@ -1,0 +1,16 @@
+﻿
+代理
+git config --global http.proxy
+
+从github下载下来
+git clone git@github.com:qq564213362/MyPublicFiles.git
+
+提交到暂存区
+git add .
+提交到分支
+git commit -m "python"
+
+第一次提交到github
+git push origin master
+提交到github
+git push origin master
