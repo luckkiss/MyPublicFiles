@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="MyChouMaSkin" xmlns:e="http://ns.egret.com/eui">
+	<e:Image source="header_png" width="98" height="75"/>
+	<e:Image source="egret_icon_png" x="23" y="14" width="51" height="51"/>
+	<e:Image source="border_png" x="6" y="16" width="19" height="9"/>
+</e:Skin>
