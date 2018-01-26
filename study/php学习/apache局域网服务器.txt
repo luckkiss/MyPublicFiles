@@ -1,5 +1,5 @@
 
-
+mac:
 1.启动apache
 sudo apachectl -k start
 
@@ -33,3 +33,7 @@ AllowOverride None
 Order allow,deny
 Allow from all
 </Directory>
+
+win:
+cd /d E:\work\apache\Apache2.2\bin  
+httpd -k start  
